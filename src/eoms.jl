@@ -43,6 +43,9 @@ mutable struct Nbody_params
 end
 
 
+"""
+Compute third-body acceleration via Battin's formula
+"""
 function third_body_accel(r_spacecraft, r_3body, mu_3body)
     s = r_spacecraft - r_3body
     q = dot(r_spacecraft, r_spacecraft - 2s)/dot(s, s)
@@ -52,21 +55,21 @@ end
 
 
 """
-N-body equations of motion
+N-body equations of motion, using SPICE query for third-body positions
 """
 function eom_Nbody_SPICE!(du, u, params, t)
-    # compute radius to primary
-    r = norm(u[1:3])
-    
+    # compute coefficient
+    mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
+
     # position derivatives
     du[1] = u[4]
     du[2] = u[5]
     du[3] = u[6]
 
     # velocity derivatives
-    du[4] = -(params.mus_scaled[1] / r^3) * u[1]
-    du[5] = -(params.mus_scaled[1] / r^3) * u[2]
-    du[6] = -(params.mus_scaled[1] / r^3) * u[3]
+    du[4] = -mu_r3 * u[1]
+    du[5] = -mu_r3 * u[2]
+    du[6] = -mu_r3 * u[3]
 
     # third-body effects
     for i = 2:length(params.mus_scaled)
