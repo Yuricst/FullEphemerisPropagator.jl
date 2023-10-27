@@ -28,7 +28,7 @@ abcorr = "NONE"
 lstar = 3000.0
 
 et0 = str2et("2020-01-01T00:00:00")
-params = FullEphemerisPropagator.Nbody_params(
+parameters = FullEphemerisPropagator.Nbody_params(
     et0,
     lstar,
     mus,
@@ -38,13 +38,13 @@ params = FullEphemerisPropagator.Nbody_params(
 )
 
 # initial state (in canonical scale)
-u0 = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+u0 = [1.0, 0.0, 0.3, 0.0, 1.0, 0.0]
 
 # time span (in canonical scale)
-tspan = (0.0, 2*pi)
+tspan = (0.0, 7*86400/parameters.tstar)
 
 # solve
-prob = ODEProblem(FullEphemerisPropagator.eom_Nbody_SPICE!, u0, tspan, params)
+prob = ODEProblem(FullEphemerisPropagator.eom_Nbody_SPICE!, u0, tspan, parameters)
 sol = solve(prob, Tsit5(), reltol=1e-12, abstol=1e-12)
 @show sol.u[end];
 

@@ -26,15 +26,6 @@ naif_frame = "J2000"
 abcorr = "NONE"
 lstar = 3000.0
 
-# initial epoch
-et0 = str2et("2020-01-01T00:00:00")
-
-# initial state (in canonical scale)
-u0 = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
-
-# time span (in canonical scale)
-tspan = (0.0, 2*pi)
-
 # instantiate propagator
 prop = FullEphemerisPropagator.Propagator(
     Tsit5(),
@@ -45,6 +36,15 @@ prop = FullEphemerisPropagator.Propagator(
     reltol = 1e-12,
     abstol = 1e-12,
 )
+
+# initial epoch
+et0 = str2et("2020-01-01T00:00:00")
+
+# initial state (in canonical scale)
+u0 = [1.0, 0.0, 0.3, 0.0, 1.0, 0.0]
+
+# time span (in canonical scale)
+tspan = (0.0, 7*86400/prop.parameters.tstar)
 
 # solve
 sol = FullEphemerisPropagator.propagate(prop, et0, u0, tspan)
