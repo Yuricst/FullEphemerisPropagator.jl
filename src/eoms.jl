@@ -2,7 +2,10 @@
 Equations of motion
 """
 
-mutable struct Nbody_params 
+abstract type FullEphemParameters end
+
+
+mutable struct Nbody_params <: FullEphemParameters
     et0::Float64
     lstar::Real
     tstar::Real
@@ -16,11 +19,11 @@ mutable struct Nbody_params
     # constructor
     function Nbody_params(
         et0,
-        lstar,
-        mus,
-        naif_ids;
-        naif_frame="J2000",
-        abcorr="NONE",
+        lstar::Real,
+        mus::Vector{Float64},
+        naif_ids::Vector{String};
+        naif_frame::String="J2000",
+        abcorr::String="NONE",
     )
         # scaled mus
         mus_scaled = mus / mus[1]
@@ -55,7 +58,8 @@ end
 
 
 """
-N-body equations of motion, using SPICE query for third-body positions
+N-body equations of motion, using SPICE query for third-body positions.
+This function signature is compatible with `DifferentialEquations.jl`.
 """
 function eom_Nbody_SPICE!(du, u, params, t)
     # compute coefficient

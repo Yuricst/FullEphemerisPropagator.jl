@@ -1,5 +1,6 @@
 """
-Test integrating N-body dynamics with SPICE call within eom
+Test integrating N-body dynamics with SPICE call within eom.
+Uses low-level API
 """
 
 using SPICE
@@ -26,8 +27,15 @@ naif_frame = "J2000"
 abcorr = "NONE"
 lstar = 3000.0
 
-# initial epoch
 et0 = str2et("2020-01-01T00:00:00")
+params = FullEphemerisPropagator.Nbody_params(
+    et0,
+    lstar,
+    mus,
+    naif_ids;
+    naif_frame=naif_frame,
+    abcorr=abcorr
+)
 
 # initial state (in canonical scale)
 u0 = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
@@ -35,19 +43,9 @@ u0 = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
 # time span (in canonical scale)
 tspan = (0.0, 2*pi)
 
-# instantiate propagator
-prop = FullEphemerisPropagator.Propagator(
-    Tsit5(),
-    lstar,
-    mus,
-    naif_ids;
-    naif_frame = naif_frame,
-    reltol = 1e-12,
-    abstol = 1e-12,
-)
-
 # solve
-sol = FullEphemerisPropagator.propagate(prop, et0, u0, tspan)
+prob = ODEProblem(FullEphemerisPropagator.eom_Nbody_SPICE!, u0, tspan, params)
+sol = solve(prob, Tsit5(), reltol=1e-12, abstol=1e-12)
 @show sol.u[end];
 
 # plot with GLMakie
