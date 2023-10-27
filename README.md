@@ -5,7 +5,7 @@ Using this set of code requires `SPICE.jl`, `DifferentialEquations.jl`, and `Lin
 
 ## Quick example
 
-For the N-body problem, we can integrate as follows:
+For the N-body problem, we can first do some setup:
 
 ```julia
 using SPICE
@@ -30,18 +30,9 @@ naif_ids = ["301", "399", "10"]     # NAIF IDs of bodies
 naif_frame = "J2000"                # NAIF frame
 abcorr = "NONE"                     # aberration  correction
 lstar = 3000.0                      # canonical length scale
-
-# initial epoch
-et0 = str2et("2020-01-01T00:00:00")
-
-# initial state (in canonical scale)
-u0 = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
-
-# time span (in canonical scale)
-tspan = (0.0, 2*pi)
 ```
 
-**High-level API**
+Now for integrating, there are two APIs available; the high-level API is as follows:
 
 ```julia
 # instantiate propagator
@@ -55,15 +46,24 @@ prop = FullEphemerisPropagator.Propagator(
     abstol = 1e-12,
 )
 
+# initial epoch
+et0 = str2et("2020-01-01T00:00:00")
+
+# initial state (in canonical scale)
+u0 = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+
+# time span (1 day, in canonical scale)
+tspan = (0.0, 86400/prop.parameters.tstar)
+
 # solve
 sol = FullEphemerisPropagator.propagate(prop, et0, u0, tspan)
 ```
 
-**Low-level API**
+If it is desirable to use `DifferentialEquations.jl`'s calls to `ODEProblem()` and `solve()` directly, we can do:
 
 ```julia
 # construct parameters
-params = FullEphemerisPropagator.Nbody_params(
+parameters = FullEphemerisPropagator.Nbody_params(
     et0,
     lstar,
     mus,
@@ -72,12 +72,21 @@ params = FullEphemerisPropagator.Nbody_params(
     abcorr=abcorr
 )
 
+# initial epoch
+et0 = str2et("2020-01-01T00:00:00")
+
+# initial state (in canonical scale)
+u0 = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+
+# time span (1 day, in canonical scale)
+tspan = (0.0, 86400/parameters.tstar)
+
 # solve
-prob = ODEProblem(FullEphemerisPropagator.eom_Nbody_SPICE!, u0, tspan, params)
+prob = ODEProblem(FullEphemerisPropagator.eom_Nbody_SPICE!, u0, tspan, parameters)
 sol = solve(prob, Tsit5(), reltol=1e-12, abstol=1e-12)
 ```
 
-Plotting: 
+Finally, plotting: 
 
 ```julia
 using GLMakie
