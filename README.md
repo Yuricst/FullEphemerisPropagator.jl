@@ -3,6 +3,12 @@
 This repository contains an easily portable implementation of the full-ephemeris spacecraft dynamics (position & velocity). 
 Using this set of code requires `SPICE.jl`, `DifferentialEquations.jl`, and `LinearAlgebra.jl`.
 
+- [DifferentialEquations.jl documentation](https://docs.sciml.ai/DiffEqDocs/stable/)
+- [Step size control](https://docs.sciml.ai/DiffEqDocs/stable/extras/timestepping/)
+
+Solvers to consider
+- Taylor methods (https://docs.sciml.ai/DiffEqDocs/stable/solvers/ode_solve/#TaylorIntegration.jl)
+
 ## Quick example
 
 For the N-body problem, we can first do some setup:
