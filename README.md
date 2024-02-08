@@ -43,7 +43,7 @@ Now for integrating, there are two APIs available; the high-level API is as foll
 ```julia
 # instantiate propagator
 prop = FullEphemerisPropagator.Propagator(
-    Tsit5(),
+    Vern9(),
     lstar,
     mus,
     naif_ids;
@@ -56,7 +56,14 @@ prop = FullEphemerisPropagator.Propagator(
 et0 = str2et("2020-01-01T00:00:00")
 
 # initial state (in canonical scale)
-u0 = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+u0 = [
+    -2.5019204591096096,
+    14.709398066624694,
+    -18.59744250295792,
+    5.62688812721852e-2,
+    1.439926311669468e-2,
+    3.808273517470642e-3
+]
 
 # time span (1 day, in canonical scale)
 tspan = (0.0, 86400/prop.parameters.tstar)
@@ -82,14 +89,21 @@ parameters = FullEphemerisPropagator.Nbody_params(
 et0 = str2et("2020-01-01T00:00:00")
 
 # initial state (in canonical scale)
-u0 = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+u0 = [
+    -2.5019204591096096,
+    14.709398066624694,
+    -18.59744250295792,
+    5.62688812721852e-2,
+    1.439926311669468e-2,
+    3.808273517470642e-3
+]
 
 # time span (1 day, in canonical scale)
 tspan = (0.0, 86400/parameters.tstar)
 
 # solve
 prob = ODEProblem(FullEphemerisPropagator.eom_Nbody_SPICE!, u0, tspan, parameters)
-sol = solve(prob, Tsit5(), reltol=1e-12, abstol=1e-12)
+sol = solve(prob, Vern9(), reltol=1e-12, abstol=1e-12)
 ```
 
 Finally, plotting: 
