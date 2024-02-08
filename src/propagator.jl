@@ -26,6 +26,8 @@ mutable struct Propagator <: FullEphemPropagator
         reltol::Float64=1e-12,
         abstol::Float64=1e-12,
     )
+        @assert length(mus) == length(naif_ids) "Length of mus and naif_ids should be equal!"
+
         # construct parameters
         parameters = FullEphemerisPropagator.Nbody_params(
             str2et("2000-01-01T00:00:00"),
@@ -76,6 +78,8 @@ mutable struct PropagatorSTM <: FullEphemPropagator
         reltol::Float64=1e-12,
         abstol::Float64=1e-12,
     )
+        @assert length(mus) == length(naif_ids) "Length of mus and naif_ids should be equal!"
+
         # construct parameters
         parameters = Nbody_params(
             str2et("2000-01-01T00:00:00"),

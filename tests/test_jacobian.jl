@@ -17,25 +17,24 @@ furnsh(joinpath(spice_dir, "spk", "de440.bsp"))
 
 naif_frame = "J2000"
 lstar = 3000
-u0_dim = [3200.0, 0.0, 4200.0, 0.0, 0.77, 0.0]
 mus = [
     4.9028000661637961E+03,
     3.9860043543609598E+05,
-    #1.3271244004193938E+11,
+    1.3271244004193938E+11,
 ]
-naif_ids = ["301", "399",]# "10"]
+naif_ids = ["301", "399", "10"]
 N = length(naif_ids)
 
-# test function
-println("Generating Jacobian function symbolically...")
-@time f_jacobian = FullEphemerisPropagator.symbolic_Nbody_jacobian(N);
-Rs = hcat(SPICE.spkpos("399", 0.0, "J2000", "NONE", "301")[1], 
-          SPICE.spkpos("10", 0.0, "J2000", "NONE", "301")[1])
-f_jacobian([u0_dim[1:3]..., mus..., Rs])
+# # test function
+# println("Generating Jacobian function symbolically...")
+# @time f_jacobian = FullEphemerisPropagator.symbolic_Nbody_jacobian(N);
+# Rs = hcat(SPICE.spkpos("399", 0.0, "J2000", "NONE", "301")[1], 
+#           SPICE.spkpos("10", 0.0, "J2000", "NONE", "301")[1])
+# f_jacobian([u0_dim[1:3]..., mus..., Rs])
 
 # integrate with STM
 prop = FullEphemerisPropagator.PropagatorSTM(
-    Vern7(),
+    Vern9(),
     lstar,
     mus,
     naif_ids;
@@ -45,14 +44,22 @@ prop = FullEphemerisPropagator.PropagatorSTM(
 )
 
 # initial epoch
-et0 = str2et("2020-01-01T00:00:00")
+et0 = 840463475.5117936 # str2et("2020-01-01T00:00:00")
 
 # initial state (in canonical scale)
-u0_dim = [3200.0, 0.0, 4200.0, 0.0, 0.77, 0.0]
-u0 = FullEphemerisPropagator.dim2nondim(prop, u0_dim)
+# u0_dim = [3200.0, 0.0, 4200.0, 0.0, 0.77, 0.0]
+# u0 = FullEphemerisPropagator.dim2nondim(prop, u0_dim)
+u0 = [
+    -2.5019204591096096,
+    14.709398066624694,
+    -18.59744250295792,
+    5.62688812721852e-2,
+    1.439926311669468e-2,
+    3.808273517470642e-3
+]
 
 # time span (in canonical scale)
-tspan = (0.0, 7*86400/prop.parameters.tstar)
+tspan = (0.0, 6.55 * 5 *86400/prop.parameters.tstar)
 
 # solve
 println("Integrating...")
@@ -63,7 +70,7 @@ display(reshape(sol.u[end][7:42], (6,6)))
 
 # validate STM
 prop_no_stm = FullEphemerisPropagator.Propagator(
-    Vern7(),
+    Vern9(),
     lstar,
     mus,
     naif_ids;

@@ -105,6 +105,6 @@ fig
 
 ## To-do's
 
-- [ ] Jacobian via `Symbolics.jl`
+- [x] Jacobian via `Symbolics.jl`
 - [ ] Spherical harmonics
 - [ ] SRP
