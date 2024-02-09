@@ -5,14 +5,14 @@ module FullEphemerisPropagator
     using DifferentialEquations
     import Symbolics
     import SymbolicUtils
-
-    #include("symbolics/f_jacobian_NbodyN2.jl")
+    using Printf: @printf
 
     include("eoms.jl")
     include("propagator.jl")
+    include("differentialcorrection.jl")
 
     export Nbody_params, eom_Nbody_SPICE!, eom_NbodySTM_SPICE!
     export Propagator, PropagatorSTM, propagate
-
+    export ForwardMultipleShootingProblem, shoot
 
 end # module FullEphemerisPropagator
