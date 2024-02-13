@@ -119,8 +119,8 @@ The initial state should be given as `u0 = [x,y,z,vx,vy,vz]`.
 function propagate(
     propagator::Propagator,
     et0::Float64,
-    u0::Vector,
-    tspan::Tuple{Real,Real};
+    tspan::Tuple{Real,Real},
+    u0::Vector;
     callback = nothing,
 )
     @assert length(u0) == 6 "u0 should be length 6, not $(length(u0))!"
@@ -153,8 +153,8 @@ The initial state should be given as `u0 = [x,y,z,vx,vy,vz]`.
 function propagate(
     propagator::PropagatorSTM,
     et0::Float64,
-    u0::Vector,
-    tspan::Tuple{Real,Real};
+    tspan::Tuple{Real,Real},
+    u0::Vector;
     callback = nothing,
     stm0 = nothing,
 )

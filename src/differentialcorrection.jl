@@ -29,7 +29,8 @@ end
 """
 Solve differential correction problem
 """
-function shoot(problem::ForwardMultipleShootingProblem, ftol::Real=1e-8; maxiter::Int=1, verbose::Bool=true)
+function shoot(problem::ForwardMultipleShootingProblem, ftol::Real=1e-8;
+               maxiter::Int=1, verbose::Bool=true)
 
     # initialize storage
     N_nodes = length(problem.epochs)
@@ -49,7 +50,7 @@ function shoot(problem::ForwardMultipleShootingProblem, ftol::Real=1e-8; maxiter
         for (idx, (et0, node)) in enumerate(zip(problem.epochs[1:end-1], problem.nodes[1:end-1]))
             # propagate each node forward in time
             tspan = (0.0, (problem.epochs[idx+1] - et0) / problem.propagator.parameters.tstar)
-            sol = propagate(problem.propagator, et0, node, tspan)
+            sol = propagate(problem.propagator, et0, tspan, node)
             # store
             residuals[1+6*(idx-1):6*idx] = problem.nodes[idx+1][1:6] - sol.u[end][1:6]
             sols[idx] = sol
