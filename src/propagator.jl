@@ -96,8 +96,8 @@ mutable struct PropagatorSTM <: FullEphemPropagator
         # construct ODE problem
         problem = ODEProblem(
             eom_NbodySTM_SPICE!,
-            [1.0, 0.0, 0.0, 0.5, 1.0, 0.0],  # placeholder for u0
-            [0.0, 1.0],                      # placeholder for tspan
+            vcat([1.0, 0.0, 0.0, 0.5, 1.0, 0.0], ones(36)),  # placeholder for u0
+            [0.0, 1.0],                                      # placeholder for tspan
             parameters,
         )
 
