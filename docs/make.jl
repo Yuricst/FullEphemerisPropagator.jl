@@ -4,10 +4,12 @@ Make documentation with Documenter.jl
 
 using Documenter
 
-include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
+include(joinpath(dirname(@__FILE__), "../src/FullEphemerisPropagator.jl"))
 
 
 makedocs(
+    clean = false,
+    build = dirname(@__FILE__),
 	modules  = [FullEphemerisPropagator],
     format   = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     sitename = "FullEphemerisPropagator.jl",
