@@ -136,3 +136,98 @@ function eom_NbodySTM_SPICE!(du, u, params, t)
     jacobian = params.f_jacobian([u[1:3]..., params.mus_scaled..., Rs])
     du[7:42] = reshape(jacobian * reshape(u[7:42], (6,6)), 36)
 end
+
+
+mutable struct NbodySRP_params <: FullEphemParameters
+    et0::Float64
+    lstar::Real
+    tstar::Real
+    vstar::Real
+    mus::Vector{Float64}
+    mus_scaled::Vector{Float64}
+    k_srp::Real
+    naif_ids::Vector{String}
+    naif_frame::String
+    abcorr::String
+    f_jacobian::Union{Nothing,Function}
+
+    # constructor
+    function NbodySRP_params(
+        et0,
+        lstar::Real,
+        mus::Vector{Float64},
+        naif_ids::Vector{String},
+        srp_cr::Real=1.15,
+        srp_Am::Real=0.002,
+        srp_P::Real=4.56e-6;
+        naif_frame::String="J2000",
+        abcorr::String="NONE",
+        AU = 149597870.7,
+    )
+        # scaled mus
+        mus_scaled = mus / mus[1]
+        # calculate tstar and vstar
+        vstar = sqrt(lstar/mus[1])
+        tstar = lstar/vstar
+
+        # compute magnitude scalar for SRP
+        k_srp = (AU/lstar)^2 * (srp_P * srp_cr * srp_Am / 1000) * (tstar^2/lstar)
+
+        # initialize object
+        new(
+            et0,
+            lstar,
+            tstar,
+            vstar,
+            mus,
+            mus_scaled,
+            k_srp,
+            naif_ids,
+            naif_frame,
+            abcorr,
+            nothing,
+        )
+    end
+end
+
+
+"""
+N-body equations of motion with SRP, using SPICE query for third-body positions.
+This function signature is compatible with `DifferentialEquations.jl`.
+"""
+function eom_NbodySRP_SPICE!(du, u, params, t)
+    # compute coefficient
+    mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
+
+    # position derivatives
+    du[1] = u[4]
+    du[2] = u[5]
+    du[3] = u[6]
+
+    # velocity derivatives
+    du[4] = -mu_r3 * u[1]
+    du[5] = -mu_r3 * u[2]
+    du[6] = -mu_r3 * u[3]
+
+    # third-body effects
+    for i = 2:length(params.mus_scaled)
+        # get position of third body
+        pos_3body, _ = spkpos(
+            params.naif_ids[i],
+            params.et0 + t*params.tstar,
+            params.naif_frame,
+            params.abcorr,
+            params.naif_ids[1]
+        )
+        pos_3body /= params.lstar   # re-scale
+
+        # compute third-body perturbation
+        du[4:6] += third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
+
+        # add SRP
+        if params.naif_ids[i] == "10"
+            r_relative = u[1:3] - pos_3body   # Sun -> spacecraft vector
+            du[4:6] += params.k_srp * r_relative/norm(r_relative)^3
+        end
+    end
+end

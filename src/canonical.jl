@@ -28,7 +28,7 @@ function sec2TU(propagator::FullEphemPropagator, t)
 end
 
 function dim2nondim(propagator, state::Vector)
-    return state .* [propagator.parameters.lstar,
+    return state ./ [propagator.parameters.lstar,
                      propagator.parameters.lstar,
                      propagator.parameters.lstar,
                      propagator.parameters.vstar,
@@ -37,7 +37,7 @@ function dim2nondim(propagator, state::Vector)
 end
 
 function nondim2dim(propagator, state::Vector)
-    return state ./ [propagator.parameters.lstar,
+    return state .* [propagator.parameters.lstar,
                      propagator.parameters.lstar,
                      propagator.parameters.lstar,
                      propagator.parameters.vstar,

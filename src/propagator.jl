@@ -20,7 +20,11 @@ mutable struct Propagator <: FullEphemPropagator
         method,
         lstar::Real,
         mus::Vector{Float64},
-        naif_ids::Vector{String};
+        naif_ids::Vector{String},
+        srp_cr::Real=1.15,
+        srp_Am::Real=0.002,
+        srp_P::Real=4.56e-6;
+        use_srp::Bool=false,
         naif_frame::String="J2000",
         abcorr::String="NONE",
         reltol::Float64=1e-12,
@@ -29,18 +33,34 @@ mutable struct Propagator <: FullEphemPropagator
         @assert length(mus) == length(naif_ids) "Length of mus and naif_ids should be equal!"
 
         # construct parameters
-        parameters = FullEphemerisPropagator.Nbody_params(
-            str2et("2000-01-01T00:00:00"),
-            lstar,
-            mus,
-            naif_ids;
-            naif_frame=naif_frame,
-            abcorr=abcorr
-        )
-
+        if use_srp == false
+            eom! = eom_Nbody_SPICE!
+            parameters = Nbody_params(
+                str2et("2000-01-01T00:00:00"),
+                lstar,
+                mus,
+                naif_ids;
+                naif_frame=naif_frame,
+                abcorr=abcorr
+            )
+        else
+            eom! = eom_NbodySRP_SPICE!
+            parameters = NbodySRP_params(
+                str2et("2000-01-01T00:00:00"),
+                lstar,
+                mus,
+                naif_ids,
+                srp_cr,
+                srp_Am,
+                srp_P;
+                naif_frame=naif_frame,
+                abcorr=abcorr
+            )
+        end
+        
         # construct ODE problem
         problem = ODEProblem(
-            eom_Nbody_SPICE!,
+            eom!,
             [1.0, 0.0, 0.0, 0.5, 1.0, 0.0],  # placeholder for u0
             [0.0, 1.0],                      # placeholder for tspan
             parameters,
@@ -184,30 +204,4 @@ function propagate(
                  callback = callback,
                  reltol = propagator.reltol,
                  abstol = propagator.abstol)
-end
-
-
-function nondim2dim(
-    propagator::FullEphemPropagator,
-    state::Vector,
-)
-    return state .* [propagator.parameters.lstar,
-                     propagator.parameters.lstar,
-                     propagator.parameters.lstar,
-                     propagator.parameters.vstar,
-                     propagator.parameters.vstar,
-                     propagator.parameters.vstar]
-end
-
-
-function dim2nondim(
-    propagator::FullEphemPropagator,
-    state::Vector,
-)
-    return state ./ [propagator.parameters.lstar,
-                     propagator.parameters.lstar,
-                     propagator.parameters.lstar,
-                     propagator.parameters.vstar,
-                     propagator.parameters.vstar,
-                     propagator.parameters.vstar]
 end
