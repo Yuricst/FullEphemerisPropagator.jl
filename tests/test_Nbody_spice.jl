@@ -45,10 +45,11 @@ u0_dim = [3200.0, 0.0, 4200.0, 0.0, 0.77, 0.0]
 u0 = FullEphemerisPropagator.dim2nondim(prop, u0_dim)
 
 # time span (in canonical scale)
-tspan = (0.0, 10*86400/prop.parameters.tstar)
+tspan = (0.0, 3*86400/prop.parameters.tstar)
 
 # solve
-sol = FullEphemerisPropagator.propagate(prop, et0, tspan, u0)
+tevals = LinRange(tspan[1], tspan[2], 1000)   # optionally specify where to query states
+sol = FullEphemerisPropagator.propagate(prop, et0, tspan, u0; saveat=tevals)
 @show sol.u[end];
 
 # plot with GLMakie
