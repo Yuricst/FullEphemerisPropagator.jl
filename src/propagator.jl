@@ -153,6 +153,7 @@ function propagate(
     tspan::Tuple{Real,Real},
     u0::Vector;
     callback = nothing,
+    kwargs...
 )
     @assert length(u0) == 6 "u0 should be length 6, not $(length(u0))!"
     @assert length(tspan) == 2 "tspan should be length 2, not $(length(tspan))!"
@@ -173,7 +174,8 @@ function propagate(
                  propagator.method;
                  callback = callback,
                  reltol = propagator.reltol,
-                 abstol = propagator.abstol)
+                 abstol = propagator.abstol,
+                 kwargs...)
 end
 
 
@@ -188,6 +190,7 @@ function propagate(
     u0::Vector;
     callback = nothing,
     stm0 = nothing,
+    kwargs...
 )
     @assert length(u0) == 6 "u0 should be length 6, not $(length(u0))!"
     @assert length(tspan) == 2 "tspan should be length 2, not $(length(tspan))!"
@@ -214,5 +217,6 @@ function propagate(
                  propagator.method;
                  callback = callback,
                  reltol = propagator.reltol,
-                 abstol = propagator.abstol)
+                 abstol = propagator.abstol,
+                 kwargs...)
 end
