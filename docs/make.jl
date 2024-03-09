@@ -26,16 +26,8 @@ makedocs(
 			# "Sims-Flanagan Transcription" => "api/api_simsflanagan.md",
 			# "Plotting" => "api/api_plot.md",
 		],
-    ]
-	# assets=[
-    #     "assets/psyche_symbol.png",
+    ],
+	# assets = [
+    #     "./assets/logo.png",
     # ],
-)
-
-deploydocs(
-    repo   = "github.com/Yuricst/FullEphemerisPropagator",
-    target = "build",
-    deps   = nothing,
-    make   = nothing,
-    push_preview = true
 )
