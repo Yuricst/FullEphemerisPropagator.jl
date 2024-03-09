@@ -13,13 +13,13 @@ include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
 
 function forwardbackward(et0, tf, x0)#, steps)
     # 1. propagate forward
-    sol_fwd = FullEphemerisPropagator.propagate(prop, et0, (0.0, tf), x0;
+    sol_fwd = FullEphemerisPropagator.propagate(prop, et0, (0.0, tf), x0
         #saveat=LinRange(0.0, tf, steps)
     )
     # 2. propagate backward
     etf = et0 + FullEphemerisPropagator.TU2sec(prop, tf)
     sol_bck = FullEphemerisPropagator.propagate(
-        prop, etf, (0.0, -tf), sol_fwd.u[end];
+        prop, etf, (0.0, -tf), sol_fwd.u[end]
         #saveat=LinRange(0.0, -tf, steps)
     )
     # compute error
