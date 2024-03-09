@@ -29,7 +29,7 @@ mutable struct Nbody_params <: FullEphemParameters
         # scaled mus
         mus_scaled = mus / mus[1]
         # calculate tstar and vstar
-        vstar = sqrt(lstar/mus[1])
+        vstar = sqrt(mus[1]/lstar)
         tstar = lstar/vstar
         # initialize object
         new(
@@ -167,7 +167,7 @@ mutable struct NbodySRP_params <: FullEphemParameters
         # scaled mus
         mus_scaled = mus / mus[1]
         # calculate tstar and vstar
-        vstar = sqrt(lstar/mus[1])
+        vstar = sqrt(mus[1]/lstar)
         tstar = lstar/vstar
 
         # compute magnitude scalar for SRP
