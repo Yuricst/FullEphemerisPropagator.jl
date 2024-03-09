@@ -48,7 +48,7 @@ u0 = FullEphemerisPropagator.dim2nondim(prop, u0_dim)
 tspan = (0.0, 10*86400/prop.parameters.tstar)
 
 # solve
-sol = FullEphemerisPropagator.propagate(prop, et0, u0, tspan)
+sol = FullEphemerisPropagator.propagate(prop, et0, tspan, u0)
 @show sol.u[end];
 
 # plot with GLMakie
