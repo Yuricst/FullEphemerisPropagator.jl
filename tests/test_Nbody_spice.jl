@@ -41,14 +41,14 @@ prop = FullEphemerisPropagator.Propagator(
 et0 = str2et("2020-01-01T00:00:00")
 
 # initial state (in canonical scale)
-u0_dim = [3200.0, 0.0, 4200.0, 0.0, 0.77, 0.0]
+u0_dim = [2200.0, 0.0, 4200.0, 0.03, 1.1, 0.1]
 u0 = FullEphemerisPropagator.dim2nondim(prop, u0_dim)
 
 # time span (in canonical scale)
-tspan = (0.0, 3*86400/prop.parameters.tstar)
+tspan = (0.0, 30*86400/prop.parameters.tstar)
 
 # solve
-tevals = LinRange(tspan[1], tspan[2], 1000)   # optionally specify where to query states
+tevals = LinRange(tspan[1], tspan[2], 15000)   # optionally specify when to query states
 sol = FullEphemerisPropagator.propagate(prop, et0, tspan, u0; saveat=tevals)
 @show sol.u[end];
 
@@ -68,4 +68,5 @@ ysphere = [center[2] + R * sin(θ[i]) * sin(ϕ[j]) for j in 1:nsph, i in 1:nsph]
 zsphere = [center[3] + R * cos(ϕ[j]) for j in 1:nsph, i in 1:nsph]
 wireframe!(ax1, xsphere, ysphere, zsphere, color=:grey, linewidth=0.5)
 
+save(joinpath(dirname(@__FILE__), "test_propagation_example.png"), fig)
 fig
