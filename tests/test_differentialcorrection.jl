@@ -78,7 +78,6 @@ ysphere = [center[2] + R * sin(θ[i]) * sin(ϕ[j]) for j in 1:nsph, i in 1:nsph]
 zsphere = [center[3] + R * cos(ϕ[j]) for j in 1:nsph, i in 1:nsph]
 wireframe!(ax1, xsphere, ysphere, zsphere, color=:grey, linewidth=0.5)
 
-
 # construct differential correction problem
 Nrev = 5
 epochs = [et0 + (idx-1) * 1.05 * period_cr3bp * TU for idx in 1:Nrev]

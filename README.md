@@ -115,6 +115,35 @@ fig
     <img src="./tests/test_propagation_example.png" width="550" title="test_propagation_example">
 </p>
 
+## References
+
+### Propagating the STM 
+
+If the state-transition matrix is also to be propagated, initialize the propagator object via
+
+```julia
+prop = FullEphemerisPropagator.PropagatorSTM(
+    Vern9(),
+    lstar,
+    mus,
+    naif_ids;
+    use_srp = true,
+    naif_frame = naif_frame,
+    reltol = 1e-12,
+    abstol = 1e-12,
+)
+```
+
+### Solar radiation pressure (SRP)
+
+Both `FullEphemerisPropagator.Propagator` and `FullEphemerisPropagator.PropagatorSTM` take as arguments `use_srp::Bool`. If set to `true`, then the SRP term is included. This is calculated based on three parameters, namely:
+
+- `srp_cr` : reflection coefficient, non-dimensional
+- `srp_Am` : Area/mass, in m^2/kg
+- `srp_P`  : radiation pressure magnitude at 1 AU, in N/m^2
+
+Note that the units for these coefficients are always expected to be in those defined in the definition here, even though the integration happens in canonical scales. 
+
 
 ## To-do's
 
