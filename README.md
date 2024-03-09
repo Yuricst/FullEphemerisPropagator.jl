@@ -121,4 +121,4 @@ fig
 
 - [x] Jacobian via `Symbolics.jl`
 - [ ] Spherical harmonics
-- [ ] SRP
+- [x] SRP

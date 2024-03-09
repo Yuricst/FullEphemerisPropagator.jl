@@ -92,7 +92,11 @@ mutable struct PropagatorSTM <: FullEphemPropagator
         method,
         lstar::Real,
         mus::Vector{Float64},
-        naif_ids::Vector{String};
+        naif_ids::Vector{String},
+        srp_cr::Real=1.15,
+        srp_Am::Real=0.002,
+        srp_P::Real=4.56e-6;
+        use_srp::Bool=false,
         naif_frame::String="J2000",
         abcorr::String="NONE",
         reltol::Float64=1e-12,
@@ -101,21 +105,36 @@ mutable struct PropagatorSTM <: FullEphemPropagator
         @assert length(mus) == length(naif_ids) "Length of mus and naif_ids should be equal!"
 
         # construct parameters
-        parameters = Nbody_params(
-            str2et("2000-01-01T00:00:00"),
-            lstar,
-            mus,
-            naif_ids;
-            naif_frame=naif_frame,
-            abcorr=abcorr
-        )
-
-        # mutate parameter `f_jacobian`
-        parameters.f_jacobian = symbolic_Nbody_jacobian(length(mus))
+        if use_srp == false
+            eom! = eom_Nbody_STM_SPICE!
+            parameters = Nbody_params(
+                str2et("2000-01-01T00:00:00"),
+                lstar,
+                mus,
+                naif_ids;
+                naif_frame=naif_frame,
+                abcorr=abcorr
+            )
+            parameters.f_jacobian = symbolic_Nbody_jacobian(length(mus))
+        else
+            eom! = eom_NbodySRP_STM_SPICE!
+            parameters = NbodySRP_params(
+                str2et("2000-01-01T00:00:00"),
+                lstar,
+                mus,
+                naif_ids,
+                srp_cr,
+                srp_Am,
+                srp_P;
+                naif_frame=naif_frame,
+                abcorr=abcorr
+            )
+            parameters.f_jacobian = symbolic_NbodySRP_jacobian(length(mus))
+        end
 
         # construct ODE problem
         problem = ODEProblem(
-            eom_NbodySTM_SPICE!,
+            eom!,
             vcat([1.0, 0.0, 0.0, 0.5, 1.0, 0.0], ones(36)),  # placeholder for u0
             [0.0, 1.0],                                      # placeholder for tspan
             parameters,

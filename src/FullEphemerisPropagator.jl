@@ -13,7 +13,7 @@ module FullEphemerisPropagator
     include("canonical.jl")
     include("differentialcorrection.jl")
 
-    export Nbody_params, eom_Nbody_SPICE!, eom_NbodySTM_SPICE!
+    export Nbody_params, eom_Nbody_SPICE!, eom_Nbody_STM_SPICE!
     export Propagator, PropagatorSTM, propagate
     export LU2km, km2LU, VU2kms, kms2VU, TU2sec, sec2TU, dim2nondim, nondim2dim
     export ForwardMultipleShootingProblem, shoot

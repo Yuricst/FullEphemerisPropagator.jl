@@ -102,7 +102,7 @@ N-body equations of motion, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
 This function propagates the concatenated state and STM.
 """
-function eom_NbodySTM_SPICE!(du, u, params, t)
+function eom_Nbody_STM_SPICE!(du, u, params, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -234,6 +234,60 @@ function eom_NbodySRP_SPICE!(du, u, params, t)
             du[4:6] += params.k_srp * r_relative/norm(r_relative)^3
         end
     end
+
+    return nothing
+end
+
+
+"""
+N-body equations of motion with SRP, using SPICE query for third-body positions.
+This function signature is compatible with `DifferentialEquations.jl`.
+This function propagates the concatenated state and STM.
+"""
+function eom_NbodySRP_STM_SPICE!(du, u, params, t)
+    # compute coefficient
+    mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
+
+    # position derivatives
+    du[1] = u[4]
+    du[2] = u[5]
+    du[3] = u[6]
+
+    # velocity derivatives
+    du[4] = -mu_r3 * u[1]
+    du[5] = -mu_r3 * u[2]
+    du[6] = -mu_r3 * u[3]
+
+    # third-body effects
+    Rs = zeros(3, length(params.mus_scaled)-1)
+    R_sun = zeros(3)
+    for i = 2:length(params.mus_scaled)
+        # get position of third body
+        pos_3body, _ = spkpos(
+            params.naif_ids[i],
+            params.et0 + t*params.tstar,
+            params.naif_frame,
+            params.abcorr,
+            params.naif_ids[1]
+        )
+        pos_3body /= params.lstar   # re-scale
+        Rs[:,i-1] = pos_3body
+        
+        # compute third-body perturbation
+        du[4:6] += third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
+
+        # add SRP
+        if params.naif_ids[i] == "10"
+            r_relative = u[1:3] - pos_3body   # Sun -> spacecraft vector
+            du[4:6] += params.k_srp * r_relative/norm(r_relative)^3
+            R_sun .= pos_3body
+        end
+    end
+
+    # stm derivatives
+    jacobian = params.f_jacobian([u[1:3]..., params.mus_scaled..., Rs,
+                                  R_sun, params.k_srp])
+    du[7:42] = reshape(jacobian * reshape(u[7:42], (6,6)), 36)
 
     return nothing
 end
