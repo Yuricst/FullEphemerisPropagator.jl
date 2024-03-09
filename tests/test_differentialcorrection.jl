@@ -4,7 +4,7 @@ Test jacobian function
 
 using SPICE
 using GLMakie
-using DifferentialEquations
+using OrdinaryDiffEq
 
 include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
 

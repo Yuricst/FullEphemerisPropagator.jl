@@ -100,7 +100,7 @@ mutable struct PropagatorSTM <: FullEphemPropagator
             [0.0, 1.0],                      # placeholder for tspan
             parameters,
         )
-
+        
         # initialize
         new(problem,
             parameters,

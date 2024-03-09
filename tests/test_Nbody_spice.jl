@@ -4,7 +4,7 @@ Test integrating N-body dynamics with SPICE call within eom
 
 using SPICE
 using GLMakie
-using DifferentialEquations
+using OrdinaryDiffEq
 
 include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
 
