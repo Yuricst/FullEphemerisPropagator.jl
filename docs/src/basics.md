@@ -1,4 +1,4 @@
-# Basic example
+# Basics
 
 For the N-body problem, we can first do some setup:
 
