@@ -26,3 +26,4 @@ Manifest.toml
 # checkpoints for jupyter notebooks
 .ipynb_checkpoints/*
 experiments/.ipynb_checkpoints/integrator_comparisons-checkpoint.ipynb
+.DS_Store
