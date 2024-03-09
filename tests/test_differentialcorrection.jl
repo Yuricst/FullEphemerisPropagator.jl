@@ -80,8 +80,8 @@ wireframe!(ax1, xsphere, ysphere, zsphere, color=:grey, linewidth=0.5)
 
 
 # construct differential correction problem
-Nrev = 4
-epochs = [et0 + (idx-1) * period_cr3bp * TU for idx in 1:Nrev]
+Nrev = 5
+epochs = [et0 + (idx-1) * 1.05 * period_cr3bp * TU for idx in 1:Nrev]
 nodes = [x0 for _ in 1:Nrev]
 
 problem = FullEphemerisPropagator.ForwardMultipleShootingProblem(
@@ -91,7 +91,7 @@ problem = FullEphemerisPropagator.ForwardMultipleShootingProblem(
 )
 
 # solve
-sols, residuals, DF = FullEphemerisPropagator.shoot(problem, maxiter=6);
+sols, residuals, DF = FullEphemerisPropagator.shoot(problem, maxiter=10);
 
 for _sol in sols
     lines!(ax1, Array(_sol)[1,:], Array(_sol)[2,:], Array(_sol)[3,:])

@@ -5,6 +5,9 @@ Differential correction functions
 abstract type AbstractDifferentialCorrectionProblem end
 
 
+"""
+Forward-only multiple shooting problem
+"""
 mutable struct ForwardMultipleShootingProblem <: AbstractDifferentialCorrectionProblem
     propagator::PropagatorSTM
     epochs::Vector{Float64}
@@ -27,7 +30,8 @@ end
 
 
 """
-Solve differential correction problem
+Solve multiple shooting problem.
+The assumed variables are the nodes only.
 """
 function shoot(problem::ForwardMultipleShootingProblem, ftol::Real=1e-8;
                maxiter::Int=1, verbose::Bool=true)
