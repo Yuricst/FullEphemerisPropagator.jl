@@ -92,6 +92,8 @@ function eom_Nbody_SPICE!(du, u, params, t)
         # compute third-body perturbation
         du[4:6] += third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
     end
+
+    return nothing
 end
 
 
@@ -135,6 +137,8 @@ function eom_NbodySTM_SPICE!(du, u, params, t)
     # stm derivatives
     jacobian = params.f_jacobian([u[1:3]..., params.mus_scaled..., Rs])
     du[7:42] = reshape(jacobian * reshape(u[7:42], (6,6)), 36)
+
+    return nothing
 end
 
 
@@ -230,4 +234,6 @@ function eom_NbodySRP_SPICE!(du, u, params, t)
             du[4:6] += params.k_srp * r_relative/norm(r_relative)^3
         end
     end
+
+    return nothing
 end
