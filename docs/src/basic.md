@@ -10,8 +10,6 @@ include("../src/FullEphemerisPropagator.jl")
 
 # furnish spice kernels
 spice_dir = ENV["SPICE"]   # modify as necessary
-
-# get spice kernels
 furnsh(joinpath(spice_dir, "lsk", "naif0012.tls"))
 furnsh(joinpath(spice_dir, "spk", "de440.bsp"))
 ```
@@ -83,10 +81,9 @@ prop = FullEphemerisPropagator.Propagator(
 )
 ```
 
+## Propagating the state
 
-## Propagation 
-
-### Propagating the state
+### High-level API
 
 Now for integrating, there are two APIs available; the high-level API is as follows:
 
@@ -110,6 +107,8 @@ tspan = (0.0, 86400/prop.parameters.tstar)
 # solve
 sol = FullEphemerisPropagator.propagate(prop, et0, u0, tspan)
 ```
+
+### Low-level API
 
 If it is desirable to use `DifferentialEquations.jl`'s calls to `ODEProblem()` and `solve()` directly, we can do:
 
@@ -150,7 +149,7 @@ lines!(ax1, sol[1,:], sol[2,:], sol[3,:])
 fig
 ```
 
-### Propagating the STM 
+## Propagating the STM 
 
 If the state-transition matrix is also to be propagated, initialize the propagator object via
 
