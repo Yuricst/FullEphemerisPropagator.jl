@@ -11,12 +11,17 @@ using LinearAlgebra
 
 include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
 
-function forwardbackward(et0, tf, x0)
+function forwardbackward(et0, tf, x0)#, steps)
     # 1. propagate forward
-    sol_fwd = FullEphemerisPropagator.propagate(prop, et0, (0.0, tf), x0);
+    sol_fwd = FullEphemerisPropagator.propagate(prop, et0, (0.0, tf), x0;
+        #saveat=LinRange(0.0, tf, steps)
+    )
     # 2. propagate backward
     etf = et0 + FullEphemerisPropagator.TU2sec(prop, tf)
-    sol_bck = FullEphemerisPropagator.propagate(prop, etf, (0.0, -tf), sol_fwd.u[end]);
+    sol_bck = FullEphemerisPropagator.propagate(
+        prop, etf, (0.0, -tf), sol_fwd.u[end];
+        #saveat=LinRange(0.0, -tf, steps)
+    )
     # compute error
     error = sol_bck.u[end] - x0
     return error, sol_fwd, sol_bck
@@ -54,19 +59,23 @@ prop = FullEphemerisPropagator.Propagator(
 );
 
 # ---------------------------------------------------------------------- #
-orbit_type = "NRHO"
+orbit_type = "NRHO"  # NRHO or LO15000
+@show orbit_type
+
 # initial epoch and state of an NRHO (almost) in canonical scales using LU = 3000 km
 et0 = 946728069.3271508
 if orbit_type == "NRHO"
     state0 = [-0.03344377115230989, 5.7624151996473545, -22.743438743043676, 
               -0.046526421787245704, 0.029709480647552224, 0.004309142532513644]
-elseif orbit_type == "LLO"
-    R_LLO = 1737.4 + 1000.0
+elseif orbit_type == "LO15000"
+    R_LLO = 1737.4 + 15000.0
     state0 = [R_LLO/lstar, 0.0, 0.0,
               0.0, 0.0, sqrt(mus[1]/R_LLO)/prop.parameters.vstar]
 end
 
+#steps = 500
 tspan = (0.0, FullEphemerisPropagator.sec2TU(prop, 30 * 86400))
+#tevals = LinRange(tspan[1], tspan[2], steps)
 
 # methods to be used
 methods = [Vern7(), TanYam7(),            # RK 7
@@ -88,7 +97,9 @@ bruns = []
     
     # run benchmark
     #FullEphemerisPropagator.pretty(prop)
-    b = @benchmarkable FullEphemerisPropagator.propagate($prop, $et0, $tspan, $state0);
+    b = @benchmarkable FullEphemerisPropagator.propagate($prop,
+        $et0, $tspan, $state0; #saveat=$tevals
+    );
     tune!(b);
     push!(bruns, run(b))
 end
@@ -105,7 +116,7 @@ n_timesteps = Int[]
     prop.method = method
 
     # run forward-backward test
-    error, sol_fwd, _ = forwardbackward(et0, tf, state0)
+    error, sol_fwd, _ = forwardbackward(et0, tf, state0, steps)
     push!(errors, [norm(error[1:3]), norm(error[4:6])])
     push!(n_timesteps, length(sol_fwd.t))
 end
