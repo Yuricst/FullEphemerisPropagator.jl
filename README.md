@@ -9,9 +9,6 @@ Using this set of code requires `SPICE.jl`, `OrdinaryDiffEq.jl`,  `Symbolics`,  
 - [DifferentialEquations.jl documentation](https://docs.sciml.ai/DiffEqDocs/stable/)
 - [Step size control](https://docs.sciml.ai/DiffEqDocs/stable/extras/timestepping/)
 
-Solvers to consider
-- Taylor methods (https://docs.sciml.ai/DiffEqDocs/stable/solvers/ode_solve/#TaylorIntegration.jl)
-
 ## Quick example
 
 For the N-body problem, we can first do some setup:
