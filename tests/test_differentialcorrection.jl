@@ -61,7 +61,7 @@ x0 = vcat(x0_SI[1:3]/prop.parameters.lstar, x0_SI[4:6]/prop.parameters.vstar)
 
 # propagate
 tspan = (0.0, period_cr3bp * TU / prop.parameters.tstar)
-sol = FullEphemerisPropagator.propagate(prop, et0, x0, tspan)
+sol = FullEphemerisPropagator.propagate(prop, et0, tspan, x0)
 
 # plot with GLMakie
 fig = Figure(size=(600,400), fontsize=22)
