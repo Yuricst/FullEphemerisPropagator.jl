@@ -1,6 +1,9 @@
 # FullEphemerisPropagator.jl
 
 This repository contains an easily portable implementation of the full-ephemeris spacecraft dynamics (position & velocity). 
+
+[Documentation here!](https://yuricst.github.io/FullEphemerisPropagator.jl/)
+
 Using this set of code requires `SPICE.jl`, `OrdinaryDiffEq.jl`,  `Symbolics`,  `SymbolicUtils`, and `LinearAlgebra.jl`.
 
 - [DifferentialEquations.jl documentation](https://docs.sciml.ai/DiffEqDocs/stable/)
