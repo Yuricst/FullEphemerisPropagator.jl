@@ -57,7 +57,7 @@ mutable struct Propagator <: FullEphemPropagator
                 abcorr=abcorr
             )
         end
-        
+
         # construct ODE problem
         problem = ODEProblem(
             eom!,
@@ -129,6 +129,17 @@ mutable struct PropagatorSTM <: FullEphemPropagator
             abstol,
         )
     end
+end
+
+
+function pretty(propagator::Union{Propagator,PropagatorSTM})
+    println("Full-ephemeris integrator")
+    println("   naif_ids     : ", propagator.parameters.naif_ids)
+    @printf("   canonical LU : %.1e\n", propagator.parameters.lstar)
+    @printf("   canonical TU : %.1e\n", propagator.parameters.tstar)
+    println("   method       : ", propagator.method)
+    @printf("   reltol       : %.1e\n", propagator.reltol)
+    @printf("   abstol       : %.1e\n", propagator.abstol)
 end
 
 
