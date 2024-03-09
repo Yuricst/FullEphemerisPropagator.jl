@@ -44,9 +44,6 @@ function shoot(problem::ForwardMultipleShootingProblem, ftol::Real=1e-8;
     end
     
     for idx in 1:maxiter
-        if verbose
-            println("Iteration: ", idx)
-        end
         for (idx, (et0, node)) in enumerate(zip(problem.epochs[1:end-1], problem.nodes[1:end-1]))
             # propagate each node forward in time
             tspan = (0.0, (problem.epochs[idx+1] - et0) / problem.propagator.parameters.tstar)
@@ -57,6 +54,10 @@ function shoot(problem::ForwardMultipleShootingProblem, ftol::Real=1e-8;
             DF[1+6*(idx-1):6*idx, 1+6*(idx-1):6*idx] = -reshape(sol.u[end][7:42], (6,6))
         end
         
+        if verbose
+            @printf("Iteration %d: ||F|| = %e\n", idx, norm(residuals))
+        end
+
         # check condition
         if norm(residuals) < ftol
             @printf("Achieved ||F|| = %e <= %e in %d iterations.", norm(residuals), ftol, idx)
@@ -66,7 +67,7 @@ function shoot(problem::ForwardMultipleShootingProblem, ftol::Real=1e-8;
         # compute Jacobian and perform update
         Δx = transpose(DF) * inv(DF * transpose(DF)) * residuals
         for idx in 1:N_nodes
-            problem.nodes[idx] += Δx[1+6*(idx-1):6*idx]
+            problem.nodes[idx] -= Δx[1+6*(idx-1):6*idx]
         end
     end
     return sols, residuals, DF

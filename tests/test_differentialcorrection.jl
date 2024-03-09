@@ -32,6 +32,7 @@ prop = FullEphemerisPropagator.PropagatorSTM(
     lstar,
     mus,
     naif_ids;
+    use_srp = true,
     naif_frame = naif_frame,
     reltol = 1e-12,
     abstol = 1e-12,
@@ -79,7 +80,7 @@ wireframe!(ax1, xsphere, ysphere, zsphere, color=:grey, linewidth=0.5)
 
 
 # construct differential correction problem
-Nrev = 3
+Nrev = 4
 epochs = [et0 + (idx-1) * period_cr3bp * TU for idx in 1:Nrev]
 nodes = [x0 for _ in 1:Nrev]
 
@@ -90,7 +91,7 @@ problem = FullEphemerisPropagator.ForwardMultipleShootingProblem(
 )
 
 # solve
-sols, residuals, DF = FullEphemerisPropagator.shoot(problem, maxiter=2);
+sols, residuals, DF = FullEphemerisPropagator.shoot(problem, maxiter=6);
 
 for _sol in sols
     lines!(ax1, Array(_sol)[1,:], Array(_sol)[2,:], Array(_sol)[3,:])
