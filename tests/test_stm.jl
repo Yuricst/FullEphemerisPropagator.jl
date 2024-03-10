@@ -25,7 +25,7 @@ naif_frame = "J2000"
 abcorr = "NONE"
 lstar = 3000.0
 
-# instantiate propagator
+# instantiate propagator without STM
 prop = FullEphemerisPropagator.Propagator(
     Vern7(),
     lstar,
@@ -37,6 +37,7 @@ prop = FullEphemerisPropagator.Propagator(
     abstol = 1e-12,
 )
 
+# instantiate propagator with STM
 prop_stm = FullEphemerisPropagator.PropagatorSTM(
     Vern7(),
     lstar,
@@ -62,6 +63,7 @@ tspan = (0.0, 1*86400/prop.parameters.tstar)
 # solve with STM
 sol_stm = FullEphemerisPropagator.propagate(prop_stm, et0, tspan, u0)
 @show sol_stm.u[end][1:6]
+println("STM via propagation:")
 display(reshape(sol_stm.u[end][7:end], 6, 6)')
 
 # solve state only & get STM via forward differencing
@@ -75,4 +77,5 @@ for i = 1:6
     sol_ptrb = FullEphemerisPropagator.propagate(prop, et0, tspan, _u0)
     stm_num[:,i] = (sol_ptrb.u[end] - sol_nominal.u[end]) / h_step
 end
+println("STM via forward difference:")
 display(stm_num)
