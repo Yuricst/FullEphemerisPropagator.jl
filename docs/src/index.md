@@ -18,3 +18,20 @@ Current capabilities include:
 - Solar radiation pressure
 - Propagation of state-transition matrix (STM) together with the state
 
+### Package dependencies
+
+Using this package requires the following Julia packages:
+
+- `LinearAlgebra`, `StaticArrays`, `SPICE`, `OrdinaryDiffEq`, `Symbolics`, `SymbolicsUtils`, `Printf`, `FiniteDifferences`
+
+- Note: `FiniteDifferences` is used for performing differential correction, but the computation of STMs is done via Symbolic jacobians for speed & accuracy.
+- In addition, relevant SPICE kernels must be downloaded and `furnsh`-ed. The minimum required kernels (for simple N-body propagation) is the leapseconds kernel (typically `naif0012.tls`, see [here](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/)) and the ephemeris kernel (typically `de440.bsp` for major solar system bodies, see [here](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/)). 
+- Some generic kernels may be found at the NAIF website: [https://naif.jpl.nasa.gov/pub/naif/generic_kernels/](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/)
+
+### Setup
+
+To setup and use the library, run
+
+```julia
+pkg> add https://github.com/Yuricst/FullEphemerisPropagator.jl.git
+```

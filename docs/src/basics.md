@@ -1,6 +1,8 @@
 # Basics
 
-For the N-body problem, we can first do some setup:
+Let's consider the case of having to integrate a state in the Moon-centered, J2000 frame, with third-body perturbations from the Earth and the Sun. 
+
+We begin by loading necessary packages and SPICE kernels:
 
 ```julia
 using SPICE
@@ -17,7 +19,7 @@ furnsh(joinpath(spice_dir, "pck", "gm_de440.tpc"))
 
 ## Configuring the dynamics
 
-We first need to give the values of GMs, their corresponding NAIF IDs, the intertial frame name in which the integration is to be done, and a canonical length scale:
+We first need to give the values of GMs, their corresponding NAIF IDs, the intertial frame name in which the integration is to be done, and a canonical length scale to improve the numerical condition:
 
 ```julia
 # define parameters
@@ -28,6 +30,8 @@ abcorr = "NONE"                                     # aberration  correction
 lstar = 3000.0                                      # canonical length scale
 ```
 
+This `lstar` is in kilometers, and can be used to rescale physical distances to the length unit used within the integrator. 
+Then, the canonical time and velocity units (`tstar` and `vstar`) are chosen such that the canonical primary GM is unity. 
 If the integration is to be done in km and km/s, simply choose `lstar = 1.0`. 
 
 Now, we need to create a propagator object
@@ -44,6 +48,13 @@ prop = FullEphemerisPropagator.Propagator(
     abstol = 1e-12,
 )
 ```
+
+We can access the canonical scales via:
+
+- Length scale: `prop.parameters.lstar`, in km
+- Time scale: `prop.parameters.tstar`, in second
+- Velocity scale: `prop.parameters.vstar`, in km/s
+
 
 ### Configuring solar radiation pressure (SRP)
 
@@ -136,7 +147,7 @@ sol = FullEphemerisPropagator.propagate(prop, et0, tspan, u0; saveat=tevals)
 @show sol.u[end];
 ```
 
-Finally, plotting: 
+Finally, to visualize the propagation in position space: 
 
 ```julia
 using GLMakie
@@ -146,7 +157,7 @@ lines!(ax1, sol[1,:], sol[2,:], sol[3,:])
 fig
 ```
 
-## Propagating the STM 
+## Propagating the state & state transition matrix (STM) 
 
 If the state-transition matrix is also to be propagated, initialize the propagator object via
 
@@ -161,4 +172,8 @@ prop = FullEphemerisPropagator.PropagatorSTM(
     reltol = 1e-12,
     abstol = 1e-12,
 )
+stm_tf = reshape(sol_stm.u[end][7:end], 6, 6)'   # STM from t0 to tf
 ```
+
+!!! warning
+    The final 6-by-6 STM is retrieved by `reshape(sol_stm.u[end][7:end], 6, 6)'`. Note that the equations of motion are flattened in *row major*, but Julia is *column major*, so the transpose is added when calling `reshape`.

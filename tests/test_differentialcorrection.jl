@@ -14,17 +14,15 @@ spice_dir = ENV["SPICE"]
 # get spice kernels
 furnsh(joinpath(spice_dir, "lsk", "naif0012.tls"))
 furnsh(joinpath(spice_dir, "spk", "de440.bsp"))
+furnsh(joinpath(spice_dir, "pck", "gm_de440.tpc"))
 furnsh(joinpath(spice_dir, "fk", "earth_moon_rotating_mc.tf"))
 
-naif_frame = "J2000"
-lstar = 3000
-mus = [
-    4.9028000661637961E+03,
-    3.9860043543609598E+05,
-    1.3271244004193938E+11,
-]
+# define parameters
 naif_ids = ["301", "399", "10"]
-N = length(naif_ids)
+mus = [bodvrd(ID, "GM", 1)[1] for ID in naif_ids]
+naif_frame = "J2000"
+abcorr = "NONE"
+lstar = 3000.0
 
 # initialize integrator
 prop = FullEphemerisPropagator.PropagatorSTM(
@@ -53,21 +51,37 @@ x0_cr3bp = [
 period_cr3bp = 4.0938520066556927E-1
 
 x0_EMrot = vcat(x0_cr3bp[1:3]*LU, x0_cr3bp[4:6]*LU/TU)
-T_EM2Inr = sxform("EARTHMOONROTATINGMC", naif_frame, et0)
-x0_SI = T_EM2Inr * x0_EMrot
 
-# convert to scale of integrator
-#x0 = FullEphemerisPropagator.dim2nondim(prop, x0_SI)
-x0 = vcat(x0_SI[1:3]/prop.parameters.lstar, x0_SI[4:6]/prop.parameters.vstar)
+# create initial guess
+Nrev = 4
+epochs = Float64[]
+nodes = Vector{Float64}[]
+for irev in 1:Nrev
+    # compue state at epoch, in CR3BP canonical scales
+    et_rev = et0 + (irev-1) * 1.05 * period_cr3bp * TU
+    T_EM2Inr = sxform("EARTHMOONROTATINGMC", naif_frame, et_rev)
+    x0_SI = T_EM2Inr * x0_EMrot
 
-# propagate
-tspan = (0.0, period_cr3bp * TU / prop.parameters.tstar)
-sol = FullEphemerisPropagator.propagate(prop, et0, tspan, x0)
+    # convert to scale of integrator
+    node = vcat(x0_SI[1:3]/prop.parameters.lstar, x0_SI[4:6]/prop.parameters.vstar)
+
+    push!(epochs, et_rev)
+    push!(nodes, node)
+end
+
+# construct differential correction problem
+problem = FullEphemerisPropagator.ForwardMultipleShootingProblem(
+    prop,
+    epochs,
+    nodes,
+)
+
+# solve
+sols, residuals, DF = FullEphemerisPropagator.shoot_fixedtime(problem, maxiter=1);
 
 # plot with GLMakie
 fig = Figure(size=(600,400), fontsize=22)
 ax1 = Axis3(fig[1, 1], aspect=:data)
-lines!(ax1, Array(sol)[1,:], Array(sol)[2,:], Array(sol)[3,:])
 nsph = 30
 θ = range(0, stop=2π, length=nsph)
 ϕ = range(0, stop=π, length=nsph)
@@ -78,24 +92,11 @@ ysphere = [center[2] + R * sin(θ[i]) * sin(ϕ[j]) for j in 1:nsph, i in 1:nsph]
 zsphere = [center[3] + R * cos(ϕ[j]) for j in 1:nsph, i in 1:nsph]
 wireframe!(ax1, xsphere, ysphere, zsphere, color=:grey, linewidth=0.5)
 
-# construct differential correction problem
-Nrev = 5
-epochs = [et0 + (idx-1) * 1.05 * period_cr3bp * TU for idx in 1:Nrev]
-nodes = [x0 for _ in 1:Nrev]
-
-problem = FullEphemerisPropagator.ForwardMultipleShootingProblem(
-    prop,
-    epochs,
-    nodes,
-)
-
-# solve
-sols, residuals, DF = FullEphemerisPropagator.shoot(problem, maxiter=10);
-
 for _sol in sols
     lines!(ax1, Array(_sol)[1,:], Array(_sol)[2,:], Array(_sol)[3,:])
+    scatter!(ax1, Array(_sol)[1,1], Array(_sol)[2,1], Array(_sol)[3,1], color=:green)
+    scatter!(ax1, Array(_sol)[1,end], Array(_sol)[2,end], Array(_sol)[3,end], color=:red)
 end
-
 
 display(fig)
 println("Done!")

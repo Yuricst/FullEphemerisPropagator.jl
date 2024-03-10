@@ -33,8 +33,11 @@ end
 Solve multiple shooting problem.
 The assumed variables are the nodes only.
 """
-function shoot(problem::ForwardMultipleShootingProblem, ftol::Real=1e-8;
-               maxiter::Int=1, verbose::Bool=true)
+function shoot_fixedtime(problem::ForwardMultipleShootingProblem,
+               ftol::Real=1e-8;
+               maxiter::Int=1,
+               verbose::Bool=true
+    )
 
     # initialize storage
     N_nodes = length(problem.epochs)
@@ -55,7 +58,7 @@ function shoot(problem::ForwardMultipleShootingProblem, ftol::Real=1e-8;
             # store
             residuals[1+6*(idx-1):6*idx] = problem.nodes[idx+1][1:6] - sol.u[end][1:6]
             sols[idx] = sol
-            DF[1+6*(idx-1):6*idx, 1+6*(idx-1):6*idx] = -reshape(sol.u[end][7:42], (6,6))
+            DF[1+6*(idx-1):6*idx, 1+6*(idx-1):6*idx] = -reshape(sol.u[end][7:42], (6,6))'
         end
         
         if verbose

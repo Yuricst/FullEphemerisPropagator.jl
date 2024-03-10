@@ -20,6 +20,6 @@ module FullEphemerisPropagator
     export Nbody_params, eom_Nbody_SPICE!, eom_Nbody_STM_SPICE!
     export Propagator, PropagatorSTM, propagate
     export LU2km, km2LU, VU2kms, kms2VU, TU2sec, sec2TU, dim2nondim, nondim2dim
-    export ForwardMultipleShootingProblem, shoot
+    export ForwardMultipleShootingProblem, shoot_fixedtime
 
 end
