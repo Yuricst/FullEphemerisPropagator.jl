@@ -14,14 +14,11 @@ spice_dir = ENV["SPICE"]
 # get spice kernels
 furnsh(joinpath(spice_dir, "lsk", "naif0012.tls"))
 furnsh(joinpath(spice_dir, "spk", "de440.bsp"))
+furnsh(joinpath(spice_dir, "pck", "gm_de440.tpc"))
 
 # define parameters
-mus = [
-    4.9028000661637961E+03,
-    3.9860043543609598E+05,
-    1.3271244004193938E+11,
-]
 naif_ids = ["301", "399", "10"]
+mus = [bodvrd(ID, "GM", 1)[1] for ID in naif_ids]
 naif_frame = "J2000"
 abcorr = "NONE"
 lstar = 3000.0

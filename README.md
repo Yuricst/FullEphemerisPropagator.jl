@@ -25,17 +25,14 @@ spice_dir = ENV["SPICE"]   # modify as necessary
 # get spice kernels
 furnsh(joinpath(spice_dir, "lsk", "naif0012.tls"))
 furnsh(joinpath(spice_dir, "spk", "de440.bsp"))
+furnsh(joinpath(spice_dir, "pck", "gm_de440.tpc"))
 
 # define parameters
-mus = [
-    4.9028000661637961E+03,
-    3.9860043543609598E+05,
-    1.3271244004193938E+11,
-]                                   # GMs
-naif_ids = ["301", "399", "10"]     # NAIF IDs of bodies
-naif_frame = "J2000"                # NAIF frame
-abcorr = "NONE"                     # aberration  correction
-lstar = 3000.0                      # canonical length scale
+naif_ids = ["301", "399", "10"]                     # NAIF IDs of bodies
+mus = [bodvrd(ID, "GM", 1)[1] for ID in naif_ids]   # GMs
+naif_frame = "J2000"                                # NAIF frame
+abcorr = "NONE"                                     # aberration  correction
+lstar = 3000.0                                      # canonical length scale
 ```
 
 Now for integrating, there are two APIs available; the high-level API is as follows:
