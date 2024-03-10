@@ -16,7 +16,10 @@ Pages   = [
 Modules = [FullEphemerisPropagator]
 Order   = [:function, :type]
 Pages   = [
-  "eoms.jl",
+  "eoms/parameters.jl",
+  "eoms/eoms_Nbody.jl",
+  "eoms/eoms_NbodySRP.jl",
+  "eoms/perturbations.jl",
   "canonical.jl",
 ]
 ```

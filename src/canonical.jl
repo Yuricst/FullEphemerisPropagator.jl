@@ -27,7 +27,7 @@ function sec2TU(propagator::FullEphemPropagator, t)
     return t / propagator.parameters.tstar
 end
 
-function dim2nondim(propagator, state::Vector)
+function dim2nondim(propagator, state::Vector{Float64})
     return state ./ [propagator.parameters.lstar,
                      propagator.parameters.lstar,
                      propagator.parameters.lstar,
@@ -36,7 +36,18 @@ function dim2nondim(propagator, state::Vector)
                      propagator.parameters.vstar]
 end
 
-function nondim2dim(propagator, state::Vector)
+function dim2nondim(propagator, state::SVector{6,Float64})
+    return SA[
+        state[1] / propagator.parameters.lstar,
+        state[2] / propagator.parameters.lstar,
+        state[3] / propagator.parameters.lstar,
+        state[4] / propagator.parameters.vstar,
+        state[5] / propagator.parameters.vstar,
+        state[6] / propagator.parameters.vstar
+    ]
+end
+
+function nondim2dim(propagator, state::Vector{Float64})
     return state .* [propagator.parameters.lstar,
                      propagator.parameters.lstar,
                      propagator.parameters.lstar,
@@ -45,3 +56,13 @@ function nondim2dim(propagator, state::Vector)
                      propagator.parameters.vstar]
 end
 
+function nondim2dim(propagator, state::SVector{6,Float64})
+    return SA[
+        state[1] * propagator.parameters.lstar,
+        state[2] * propagator.parameters.lstar,
+        state[3] * propagator.parameters.lstar,
+        state[4] * propagator.parameters.vstar,
+        state[5] * propagator.parameters.vstar,
+        state[6] * propagator.parameters.vstar
+    ]
+end

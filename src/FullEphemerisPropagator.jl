@@ -1,13 +1,17 @@
 module FullEphemerisPropagator
 
     using LinearAlgebra
+    using StaticArrays
     using SPICE
     using OrdinaryDiffEq
     import Symbolics
     import SymbolicUtils
     using Printf: @printf
 
-    include("eoms.jl")
+    include("parameters.jl")
+    include("eoms/perturbations.jl")
+    include("eoms/eoms_Nbody.jl")
+    include("eoms/eoms_NbodySRP.jl")
     include("symbolic_jacobians.jl")
     include("propagator.jl")
     include("canonical.jl")

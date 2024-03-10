@@ -15,7 +15,8 @@ mutable struct Propagator <: FullEphemPropagator
     reltol::Float64
     abstol::Float64
     use_srp::Bool
-    
+    use_sa::Bool
+
     # constructor
     function Propagator(
         method,
@@ -30,12 +31,17 @@ mutable struct Propagator <: FullEphemPropagator
         abcorr::String="NONE",
         reltol::Float64=1e-12,
         abstol::Float64=1e-12,
+        use_sa::Bool=false,
     )
         @assert length(mus) == length(naif_ids) "Length of mus and naif_ids should be equal!"
 
         # construct parameters
         if use_srp == false
-            eom! = eom_Nbody_SPICE!
+            if use_sa == true
+                eom! = eom_Nbody_SPICE
+            else
+                eom! = eom_Nbody_SPICE!
+            end
             parameters = Nbody_params(
                 str2et("2000-01-01T00:00:00"),
                 lstar,
@@ -45,7 +51,11 @@ mutable struct Propagator <: FullEphemPropagator
                 abcorr=abcorr
             )
         else
-            eom! = eom_NbodySRP_SPICE!
+            if use_sa == true
+                eom! = eom_NbodySRP_SPICE
+            else
+                eom! = eom_NbodySRP_SPICE!
+            end
             parameters = NbodySRP_params(
                 str2et("2000-01-01T00:00:00"),
                 lstar,
@@ -74,6 +84,7 @@ mutable struct Propagator <: FullEphemPropagator
             reltol,
             abstol,
             use_srp,
+            use_sa,
         )
     end
 end
@@ -89,6 +100,7 @@ mutable struct PropagatorSTM <: FullEphemPropagator
     reltol::Float64
     abstol::Float64
     use_srp::Bool
+    use_sa::Bool
     
     # constructor
     function PropagatorSTM(
@@ -104,6 +116,7 @@ mutable struct PropagatorSTM <: FullEphemPropagator
         abcorr::String="NONE",
         reltol::Float64=1e-12,
         abstol::Float64=1e-12,
+        use_sa::Bool=false,
     )
         @assert length(mus) == length(naif_ids) "Length of mus and naif_ids should be equal!"
 
@@ -150,6 +163,7 @@ mutable struct PropagatorSTM <: FullEphemPropagator
             reltol,
             abstol,
             use_srp,
+            use_sa,
         )
     end
 end
@@ -159,23 +173,35 @@ function pretty(propagator::Union{Propagator,PropagatorSTM})
     println("Full-ephemeris integrator")
     println("   naif_ids     : ", propagator.parameters.naif_ids)
     println("   use_srp      : ", propagator.use_srp)
-    @printf("   canonical LU : %.1e\n", propagator.parameters.lstar)
-    @printf("   canonical TU : %.1e\n", propagator.parameters.tstar)
+    @printf("   canonical LU : %1.4f\n", propagator.parameters.lstar)
+    @printf("   canonical TU : %1.4f\n", propagator.parameters.tstar)
     println("   method       : ", propagator.method)
     @printf("   reltol       : %.1e\n", propagator.reltol)
     @printf("   abstol       : %.1e\n", propagator.abstol)
+    println("   use_sa       : ", propagator.use_sa)
 end
 
 
 """
 Propagate initial state `u0` from `tspan[1]` to `tspan[2]`.
 The initial state should be given as `u0 = [x,y,z,vx,vy,vz]`.
+
+Additional keyworded arguments for DifferentialEquations.solve() can be passed.
+See: https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/#CommonSolve.solve-Tuple%7BSciMLBase.AbstractDEProblem,%20Vararg%7BAny%7D%7D
+
+# Arguments
+- `propagator::Propagator`: Propagator object
+- `et0::Float64`: Initial epoch in ephemeris time, in seconds
+- `tspan::Tuple{Real,Real}`: Time span to propagate, in canonical time units
+- `u0::Vector`: Initial state vector
+- `callback::Union{Nothing,Function}`: Optional callback function
+- `kwargs...`: Additional keyworded arguments for DifferentialEquations.solve()
 """
 function propagate(
     propagator::Propagator,
     et0::Float64,
     tspan::Tuple{Real,Real},
-    u0::Vector;
+    u0::Union{Vector,SVector{6,Float64}};
     callback = nothing,
     kwargs...
 )
@@ -204,8 +230,19 @@ end
 
 
 """
-Propagate initial state `u0` from `tspan[1]` to `tspan[2]`.
+Propagate initial state `u0` and STM from `tspan[1]` to `tspan[2]`.
 The initial state should be given as `u0 = [x,y,z,vx,vy,vz]`.
+
+Additional keyworded arguments for DifferentialEquations.solve() can be passed.
+See: https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/#CommonSolve.solve-Tuple%7BSciMLBase.AbstractDEProblem,%20Vararg%7BAny%7D%7D    
+
+# Arguments
+- `propagator::Propagator`: Propagator object
+- `et0::Float64`: Initial epoch in ephemeris time, in seconds
+- `tspan::Tuple{Real,Real}`: Time span to propagate, in canonical time units
+- `u0::Vector`: Initial state vector
+- `callback::Union{Nothing,Function}`: Optional callback function
+- `kwargs...`: Additional keyworded arguments for DifferentialEquations.solve()
 """
 function propagate(
     propagator::PropagatorSTM,
