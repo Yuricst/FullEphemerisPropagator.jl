@@ -14,6 +14,7 @@ mutable struct Propagator <: FullEphemPropagator
     method
     reltol::Float64
     abstol::Float64
+    use_srp::Bool
     
     # constructor
     function Propagator(
@@ -72,6 +73,7 @@ mutable struct Propagator <: FullEphemPropagator
             method,
             reltol,
             abstol,
+            use_srp,
         )
     end
 end
@@ -86,6 +88,7 @@ mutable struct PropagatorSTM <: FullEphemPropagator
     method
     reltol::Float64
     abstol::Float64
+    use_srp::Bool
     
     # constructor
     function PropagatorSTM(
@@ -146,6 +149,7 @@ mutable struct PropagatorSTM <: FullEphemPropagator
             method,
             reltol,
             abstol,
+            use_srp,
         )
     end
 end
@@ -154,6 +158,7 @@ end
 function pretty(propagator::Union{Propagator,PropagatorSTM})
     println("Full-ephemeris integrator")
     println("   naif_ids     : ", propagator.parameters.naif_ids)
+    println("   use_srp      : ", propagator.use_srp)
     @printf("   canonical LU : %.1e\n", propagator.parameters.lstar)
     @printf("   canonical TU : %.1e\n", propagator.parameters.tstar)
     println("   method       : ", propagator.method)
