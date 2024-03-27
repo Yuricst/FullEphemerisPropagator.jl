@@ -66,7 +66,7 @@ u0 = [
 tspan = (0.0, 86400/prop.parameters.tstar)
 
 # solve
-sol = FullEphemerisPropagator.propagate(prop, et0, u0, tspan)
+sol = FullEphemerisPropagator.propagate(prop, et0, tspan, u0)
 ```
 
 If it is desirable to use `DifferentialEquations.jl`'s calls to `ODEProblem()` and `solve()` directly, we can do:
