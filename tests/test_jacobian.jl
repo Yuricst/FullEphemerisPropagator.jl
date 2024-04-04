@@ -61,9 +61,14 @@ u0 = [
 # time span (in canonical scale)
 tspan = (0.0, 6.55 * 5 *86400/prop.parameters.tstar)
 
+# evaluate jacobian at initial time
+jac = FullEphemerisPropagator.jacobian(prop, et0, 0.0, u0)
+println("jac:")
+display(jac)
+
 # solve
 println("Integrating...")
-@time sol = FullEphemerisPropagator.propagate(prop, et0, u0, tspan)
+@time sol = FullEphemerisPropagator.propagate(prop, et0, tspan, u0)
 println("Done!")
 @show sol.u[end][1:6], sol.t[end]
 display(reshape(sol.u[end][7:42], (6,6)))
@@ -82,7 +87,7 @@ STM_numerical = zeros(6,6)
 for i = 1:6
     u0_ptrb = deepcopy(u0)
     u0_ptrb[i] += 1e-6
-    _sol = FullEphemerisPropagator.propagate(prop_no_stm, et0, u0_ptrb, tspan)
+    _sol = FullEphemerisPropagator.propagate(prop_no_stm, et0, tspan, u0_ptrb)
     STM_numerical[:,i] = (_sol.u[end][1:6] - sol.u[end][1:6]) / 1e-6
 end
 display(STM_numerical)

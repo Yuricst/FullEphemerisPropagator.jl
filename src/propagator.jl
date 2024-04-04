@@ -281,3 +281,39 @@ function propagate(
                  abstol = propagator.abstol,
                  kwargs...)
 end
+
+
+
+"""
+Compute Jacobian from dynamics in propagator model.
+Evaluated at epoch `et0 + t*tstar` at state `u`
+"""
+function jacobian(
+    propagator::PropagatorSTM,
+    et0::Float64,
+    t::Real,
+    u::Vector,
+)
+    # modify value for initial epoch
+    propagator.parameters.et0 = et0
+
+    # get third-body positions
+    for i = 2:length(propagator.parameters.mus_scaled)
+        # get position of third body
+        pos_3body, _ = spkpos(
+            propagator.parameters.naif_ids[i],
+            propagator.parameters.et0 + t * propagator.parameters.tstar,
+            propagator.parameters.naif_frame,
+            propagator.parameters.abcorr,
+            propagator.parameters.naif_ids[1]
+        )
+        pos_3body /= propagator.parameters.lstar                       # re-scale
+        propagator.parameters.Rs[1+3(i-2):3(i-1)] .= pos_3body
+    end
+
+    Uxx = propagator.parameters.f_jacobian(
+        u[1:3]...,
+        propagator.parameters.mus_scaled...,
+        propagator.parameters.Rs...)
+    return vcat(hcat(zeros(3,3), I(3)), hcat(reshape(Uxx, (3,3))', zeros(3,3)))
+end

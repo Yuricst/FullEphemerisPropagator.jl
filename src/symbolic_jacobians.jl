@@ -7,7 +7,7 @@ function symbolic_Nbody_jacobian(N::Int)
     # define symbolic variables
     Symbolics.@variables x y z #state[1:3]
     Symbolics.@variables mus[1:N]
-    Symbolics.@variables Rs[3*(N-1)]
+    Symbolics.@variables Rs[1:3*(N-1)]
 
     # define accelerations
     rnorm = sqrt(x^2 + y^2 + z^2)
