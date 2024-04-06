@@ -73,7 +73,7 @@ function shoot_fixedtime(problem::ManeuverForwardMultipleShootingProblem,
 
         # check condition
         if norm(residuals) < ftol
-            @printf("Achieved ||F|| = %e <= %e in %d iterations.", norm(residuals), ftol, idx)
+            @printf("Achieved ||F|| = %e <= %e in %d iterations.\n", norm(residuals), ftol, idx)
             break
         end
 
