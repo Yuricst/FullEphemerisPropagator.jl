@@ -1,8 +1,6 @@
 """
-Differential correction functions
+Forward multiple shooting differential correction
 """
-
-abstract type AbstractDifferentialCorrectionProblem end
 
 
 """

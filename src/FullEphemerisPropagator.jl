@@ -8,6 +8,8 @@ module FullEphemerisPropagator
     import SymbolicUtils
     using Printf: @printf
 
+    abstract type AbstractDifferentialCorrectionProblem end
+
     include("parameters.jl")
     include("eoms/perturbations.jl")
     include("eoms/eoms_Nbody.jl")
@@ -15,7 +17,8 @@ module FullEphemerisPropagator
     include("symbolic_jacobians.jl")
     include("propagator.jl")
     include("canonical.jl")
-    include("differentialcorrection.jl")
+    include("differentialcorrection/forward_multiple_shooting.jl")
+    include("differentialcorrection/maneuver_multiple_shooting.jl")
 
     export Nbody_params, eom_Nbody_SPICE!, eom_Nbody_STM_SPICE!
     export Propagator, PropagatorSTM, propagate
