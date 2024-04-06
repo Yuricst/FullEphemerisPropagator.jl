@@ -17,6 +17,7 @@ module FullEphemerisPropagator
     include("symbolic_jacobians.jl")
     include("propagator.jl")
     include("canonical.jl")
+    include("callbacks.jl")
     include("differentialcorrection/forward_multiple_shooting.jl")
     include("differentialcorrection/maneuver_multiple_shooting.jl")
 
