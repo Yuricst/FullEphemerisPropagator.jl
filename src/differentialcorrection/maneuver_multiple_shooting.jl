@@ -48,7 +48,7 @@ function shoot_fixedtime(problem::ManeuverForwardMultipleShootingProblem,
     sols = Vector{ODESolution}(undef, N_nodes-1)
     DF = zeros(3(N_nodes-1), 3(N_nodes-1))
     residuals = zeros(3 * (N_nodes - 1))
-    problem.maneuvers = [[0.0, 0.0, 0.0] for _ in 1:N_nodes-1]
+    initial_node = deepcopy(problem.nodes[1])           # keep copy for later
 
     for idx in 1:maxiter
         for (idx, (et0, node)) in enumerate(zip(problem.epochs[1:end-1], problem.nodes[1:end-1]))
@@ -59,9 +59,6 @@ function shoot_fixedtime(problem::ManeuverForwardMultipleShootingProblem,
             # position residuals
             residuals[1+3*(idx-1):3*idx] = problem.nodes[idx+1][1:3] - sol.u[end][1:3]
             sols[idx] = sol
-
-            # store maneuvers
-            problem.maneuvers[idx] = problem.nodes[idx+1][4:6] - sol.u[end][4:6]
             
             # Jacobian: ∂r(tf) / ∂v(t0)
             DF[1+3*(idx-1):3*idx, 1+3*(idx-1):3*idx] = -reshape(sol.u[end][7:42], (6,6))'[1:3,4:6]
@@ -81,9 +78,15 @@ function shoot_fixedtime(problem::ManeuverForwardMultipleShootingProblem,
         Δx = inv(DF) * residuals  #transpose(DF) * inv(DF * transpose(DF)) * residuals
         
         for idx in 1:N_nodes - 1
-            # update velocity
             problem.nodes[idx][4:6] -= Δx[1+3*(idx-1):3*idx]
         end
+    end
+
+    # store maneuvers
+    problem.maneuvers = [[0.0, 0.0, 0.0] for _ in 1:N_nodes-1]  # initialize
+    problem.maneuvers[1] .= sols[1].u[1][4:6] - initial_node[4:6]
+    for (idx, (sol1, sol2)) in enumerate(zip(sols[1:end-1], sols[2:end]))
+        problem.maneuvers[idx+1] .= sol2.u[1][4:6] - sol1.u[end][4:6]
     end
     return sols, residuals, DF
 end
