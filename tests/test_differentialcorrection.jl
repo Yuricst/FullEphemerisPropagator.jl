@@ -25,7 +25,17 @@ abcorr = "NONE"
 lstar = 3000.0
 
 # initialize integrator
-prop = FullEphemerisPropagator.PropagatorSTM(
+prop = FullEphemerisPropagator.Propagator(
+    Vern9(),
+    lstar,
+    mus,
+    naif_ids;
+    use_srp = true,
+    naif_frame = naif_frame,
+    reltol = 1e-12,
+    abstol = 1e-12,
+)
+prop_stm = FullEphemerisPropagator.PropagatorSTM(
     Vern9(),
     lstar,
     mus,
@@ -53,17 +63,17 @@ period_cr3bp = 4.0938520066556927E-1
 x0_EMrot = vcat(x0_cr3bp[1:3]*LU, x0_cr3bp[4:6]*LU/TU)
 
 # create initial guess
-Nrev = 4
+Nrev = 10
 epochs = Float64[]
 nodes = Vector{Float64}[]
 for irev in 1:Nrev
     # compue state at epoch, in CR3BP canonical scales
-    et_rev = et0 + (irev-1) * 1.05 * period_cr3bp * TU
+    et_rev = et0 + (irev-1) * period_cr3bp * TU
     T_EM2Inr = sxform("EARTHMOONROTATINGMC", naif_frame, et_rev)
     x0_SI = T_EM2Inr * x0_EMrot
 
     # convert to scale of integrator
-    node = vcat(x0_SI[1:3]/prop.parameters.lstar, x0_SI[4:6]/prop.parameters.vstar)
+    node = vcat(x0_SI[1:3]/prop_stm.parameters.lstar, x0_SI[4:6]/prop_stm.parameters.vstar)
 
     push!(epochs, et_rev)
     push!(nodes, node)
@@ -72,12 +82,17 @@ end
 # construct differential correction problem
 problem = FullEphemerisPropagator.ForwardMultipleShootingProblem(
     prop,
+    prop_stm,
     epochs,
     nodes,
 )
+@show problem.epochs
+@show problem.tofs
 
 # solve
-sols, residuals, DF = FullEphemerisPropagator.shoot_fixedtime(problem, maxiter=1);
+sols, residuals, DF = FullEphemerisPropagator.shoot_freetime(problem, maxiter=5);
+@show problem.epochs
+@show problem.tofs
 
 # plot with GLMakie
 fig = Figure(size=(600,400), fontsize=22)
@@ -95,7 +110,7 @@ wireframe!(ax1, xsphere, ysphere, zsphere, color=:grey, linewidth=0.5)
 for _sol in sols
     lines!(ax1, Array(_sol)[1,:], Array(_sol)[2,:], Array(_sol)[3,:])
     scatter!(ax1, Array(_sol)[1,1], Array(_sol)[2,1], Array(_sol)[3,1], color=:green)
-    scatter!(ax1, Array(_sol)[1,end], Array(_sol)[2,end], Array(_sol)[3,end], color=:red)
+    scatter!(ax1, Array(_sol)[1,end], Array(_sol)[2,end], Array(_sol)[3,end], color=:red, marker=:rect)
 end
 
 display(fig)
