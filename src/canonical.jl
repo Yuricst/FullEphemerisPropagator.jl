@@ -66,3 +66,21 @@ function nondim2dim(propagator, state::SVector{6,Float64})
         state[6] * propagator.parameters.vstar
     ]
 end
+
+
+"""Convert non-dimensional STM to dimensional STM"""
+function nondim2dim_stm(propagator, stm)
+    _stm = copy(stm)
+    _stm[0:3, 3:6] *= propagator.parameters.lstar/propagator.parameters.vstar 
+    _stm[3:6, 0:3] *= propagator.parameters.vstar/propagator.parameters.lstar 
+    return _stm
+end
+
+
+"""Convert dimensional STM to non-dimensional STM"""
+function dim2nondim_stm(propagator, stm)
+    _stm = copy(stm)
+    _stm[0:3, 3:6] /= propagator.parameters.lstar/propagator.parameters.vstar 
+    _stm[3:6, 0:3] /= propagator.parameters.vstar/propagator.parameters.lstar 
+    return _stm
+end
