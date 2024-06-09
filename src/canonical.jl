@@ -71,8 +71,8 @@ end
 """Convert non-dimensional STM to dimensional STM"""
 function nondim2dim_stm(propagator, stm)
     _stm = copy(stm)
-    _stm[0:3, 3:6] *= propagator.parameters.lstar/propagator.parameters.vstar 
-    _stm[3:6, 0:3] *= propagator.parameters.vstar/propagator.parameters.lstar 
+    _stm[1:3, 4:6] *= propagator.parameters.lstar/propagator.parameters.vstar 
+    _stm[4:6, 1:3] *= propagator.parameters.vstar/propagator.parameters.lstar 
     return _stm
 end
 
@@ -80,7 +80,7 @@ end
 """Convert dimensional STM to non-dimensional STM"""
 function dim2nondim_stm(propagator, stm)
     _stm = copy(stm)
-    _stm[0:3, 3:6] /= propagator.parameters.lstar/propagator.parameters.vstar 
-    _stm[3:6, 0:3] /= propagator.parameters.vstar/propagator.parameters.lstar 
+    _stm[1:3, 4:6] /= propagator.parameters.lstar/propagator.parameters.vstar 
+    _stm[4:6, 1:3] /= propagator.parameters.vstar/propagator.parameters.lstar 
     return _stm
 end
