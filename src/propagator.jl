@@ -122,7 +122,11 @@ mutable struct PropagatorSTM <: FullEphemPropagator
 
         # construct parameters
         if use_srp == false
-            eom! = eom_Nbody_STM_SPICE!
+            if use_sa == true
+                eom! = eom_Nbody_STM_SPICE
+            else
+                eom! = eom_Nbody_STM_SPICE!
+            end
             parameters = Nbody_params(
                 str2et("2000-01-01T00:00:00"),
                 lstar,
@@ -133,7 +137,12 @@ mutable struct PropagatorSTM <: FullEphemPropagator
             )
             parameters.f_jacobian = symbolic_Nbody_jacobian(length(mus))
         else
-            eom! = eom_NbodySRP_STM_SPICE!
+            if use_sa == true
+                error("Not implemented yet!")
+                #eom! = eom_Nbody_SPICE
+            else
+                eom! = eom_NbodySRP_STM_SPICE!
+            end
             parameters = NbodySRP_params(
                 str2et("2000-01-01T00:00:00"),
                 lstar,
@@ -212,6 +221,7 @@ function propagate(
     propagator.parameters.et0 = et0
 
     # mutate ODEProblem 
+    #u0 = @MVector [el for el in u0]
     modified_problem = remake(
         propagator.problem;
         u0 = u0,
@@ -248,7 +258,7 @@ function propagate(
     propagator::PropagatorSTM,
     et0::Float64,
     tspan::Tuple{Real,Real},
-    u0::Vector;
+    u0::Union{Vector,SVector{6,Float64}};
     callback = nothing,
     stm0 = nothing,
     kwargs...
@@ -262,6 +272,10 @@ function propagate(
         u0_stm = vcat(u0, reshape(stm0, 36))
     end
 
+    if propagator.use_sa
+        u0_stm = SA[u0_stm...]
+    end
+
     # modify value for initial epoch
     propagator.parameters.et0 = et0
 
@@ -272,7 +286,7 @@ function propagate(
         tspan = tspan,
         p = propagator.parameters
     )
-
+    
     # solve and return results
     return solve(modified_problem,
                  propagator.method;
