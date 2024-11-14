@@ -25,12 +25,22 @@ mutable struct Nbody_params <: FullEphemParameters
         naif_ids::Vector{String};
         naif_frame::String="J2000",
         abcorr::String="NONE",
+        use_canonical::Bool = true,
     )
-        # scaled mus
-        mus_scaled = mus / mus[1]
-        # calculate tstar and vstar
-        vstar = sqrt(mus[1]/lstar)
-        tstar = lstar/vstar
+        if use_canonical
+            # scaled mus
+            mus_scaled = mus / mus[1]
+
+            # calculate tstar and vstar
+            vstar = sqrt(mus[1]/lstar)
+            tstar = lstar/vstar
+        else
+            mus_scaled = mus
+            lstar = 1.0
+            vstar = 1.0
+            tstar = 1.0
+        end
+
         # initialize object
         new(
             et0,
@@ -75,12 +85,21 @@ mutable struct NbodySRP_params <: FullEphemParameters
         naif_frame::String="J2000",
         abcorr::String="NONE",
         AU = 149597870.7,
+        use_canonical::Bool = true,
     )
-        # scaled mus
-        mus_scaled = mus / mus[1]
-        # calculate tstar and vstar
-        vstar = sqrt(mus[1]/lstar)
-        tstar = lstar/vstar
+        if use_canonical
+            # scaled mus
+            mus_scaled = mus / mus[1]
+
+            # calculate tstar and vstar
+            vstar = sqrt(mus[1]/lstar)
+            tstar = lstar/vstar
+        else
+            mus_scaled = mus
+            lstar = 1.0
+            vstar = 1.0
+            tstar = 1.0
+        end
 
         # compute magnitude scalar for SRP
         k_srp = (AU/lstar)^2 * (srp_P * srp_cr * srp_Am / 1000) * (tstar^2/lstar)
