@@ -94,7 +94,8 @@ tspan = (0.0, 30*86400/prop.parameters.tstar)
 
 # solve
 tevals = LinRange(tspan[1], tspan[2], 15000)   # optionally specify when to query states
-sol = FullEphemerisPropagator.propagate(prop, et0, tspan, u0; saveat=tevals)
+prob = ODEProblem(FullEphemerisPropagator.eom_Nbody_SPICE!, u0, tspan, parameters)
+sol = solve(prob, Tsit5(), reltol=1e-12, abstol=1e-12)
 @show sol.u[end];
 ```
 
