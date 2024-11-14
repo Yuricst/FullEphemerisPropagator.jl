@@ -110,7 +110,7 @@ fig
 ```
 
 <p align="center">
-    <img src="./tests/test_propagation_example.png" width="550" title="test_propagation_example">
+    <img src="./test/test_propagation_example.png" width="550" title="test_propagation_example">
 </p>
 
 ## References
@@ -132,7 +132,18 @@ prop = FullEphemerisPropagator.PropagatorSTM(
 )
 ```
 
-### Solar radiation pressure (SRP)
+### Evaluate Jacobian
+
+To evaluate the Jacobian at an epoch `et0 + t_seconds` and state `x`, use
+
+```julia
+jac = FullEphemerisPropagator.jacobian(prop, et0, t_seconds, x)
+```
+
+where `prop` is an instance of `FullEphemerisPropagator.PropagatorSTM`. 
+
+
+### Solar radiation pressure (SRP) modeling
 
 Both `FullEphemerisPropagator.Propagator` and `FullEphemerisPropagator.PropagatorSTM` take as arguments `use_srp::Bool`. If set to `true`, then the SRP term is included. This is calculated based on three parameters, namely:
 
