@@ -134,10 +134,10 @@ prop = FullEphemerisPropagator.PropagatorSTM(
 
 ### Evaluate Jacobian
 
-To evaluate the Jacobian at an epoch `et0 + t_seconds` and state `x`, use
+To evaluate the Jacobian at an epoch `et0 + t * TU` and state `x`, use
 
 ```julia
-jac = FullEphemerisPropagator.jacobian(prop, et0, t_seconds, x)
+jac = FullEphemerisPropagator.jacobian(prop, et0, t, x)  # note:  t is converted from TU to seconds internally
 ```
 
 where `prop` is an instance of `FullEphemerisPropagator.PropagatorSTM`. 
