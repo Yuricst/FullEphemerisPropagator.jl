@@ -308,7 +308,6 @@ function jacobian(
     t::Real,
     u::Vector,
 )
-
     # get third-body positions
     for i = 2:length(propagator.parameters.mus_scaled)
         # get position of third body
@@ -337,7 +336,6 @@ function jacobian(
     t::Real,
     u::Vector,
 )
-
     # get third-body positions
     for i = 2:length(parameters.mus_scaled)
         # get position of third body
