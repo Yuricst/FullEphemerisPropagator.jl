@@ -308,15 +308,13 @@ function jacobian(
     t::Real,
     u::Vector,
 )
-    # modify value for initial epoch
-    propagator.parameters.et0 = et0
 
     # get third-body positions
     for i = 2:length(propagator.parameters.mus_scaled)
         # get position of third body
         pos_3body, _ = spkpos(
             propagator.parameters.naif_ids[i],
-            propagator.parameters.et0 + t * propagator.parameters.tstar,
+            et0 + t * propagator.parameters.tstar,
             propagator.parameters.naif_frame,
             propagator.parameters.abcorr,
             propagator.parameters.naif_ids[1]
@@ -329,5 +327,34 @@ function jacobian(
         u[1:3]...,
         propagator.parameters.mus_scaled...,
         propagator.parameters.Rs...)
+    return vcat(hcat(zeros(3,3), I(3)), hcat(reshape(Uxx, (3,3))', zeros(3,3)))
+end
+
+
+function jacobian(
+    parameters::FullEphemParameters,
+    et0::Float64,
+    t::Real,
+    u::Vector,
+)
+
+    # get third-body positions
+    for i = 2:length(parameters.mus_scaled)
+        # get position of third body
+        pos_3body, _ = spkpos(
+            parameters.naif_ids[i],
+            et0 + t * parameters.tstar,
+            parameters.naif_frame,
+            parameters.abcorr,
+            parameters.naif_ids[1]
+        )
+        pos_3body /= parameters.lstar                       # re-scale
+        parameters.Rs[1+3(i-2):3(i-1)] .= pos_3body
+    end
+
+    Uxx = parameters.f_jacobian(
+        u[1:3]...,
+        parameters.mus_scaled...,
+        parameters.Rs...)
     return vcat(hcat(zeros(3,3), I(3)), hcat(reshape(Uxx, (3,3))', zeros(3,3)))
 end
