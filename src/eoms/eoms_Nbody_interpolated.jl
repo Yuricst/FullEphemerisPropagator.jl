@@ -1,11 +1,12 @@
-"""Equations of motion for N-body problem with solar radiation pressure (SRP)"""
+"""Equations of motion for N-body problem with interpolation of third-body positions"""
 
 
 """
-N-body equations of motion with SRP, using SPICE query for third-body positions.
+N-body equations of motion, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
+This is a static version of the function.
 """
-function eom_NbodySRP_SPICE(u, params::NbodySRP_params, t)
+function eom_Nbody_SPICE(u, params::InterpolatedNbodyParams, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -32,26 +33,18 @@ function eom_NbodySRP_SPICE(u, params::NbodySRP_params, t)
         dvx += a_3bd[1]
         dvy += a_3bd[2]
         dvz += a_3bd[3]
-
-        # add SRP
-        if params.naif_ids[i] == "10"
-            r_relative = u[1:3] - pos_3body   # Sun -> spacecraft vector
-            du[4:6] += params.k_srp * r_relative/norm(r_relative)^3
-            dvx += params.k_srp * r_relative[1]/norm(r_relative)^3
-            dvy += params.k_srp * r_relative[2]/norm(r_relative)^3
-            dvz += params.k_srp * r_relative[3]/norm(r_relative)^3
-        end
     end
+
     return SA[dx,dy,dz,dvx,dvy,dvz]
 end
 
 
 
 """
-N-body equations of motion with SRP, using SPICE query for third-body positions.
+N-body equations of motion, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
 """
-function eom_NbodySRP_SPICE!(du, u, params::NbodySRP_params, t)
+function eom_Nbody_SPICE!(du, u, params::InterpolatedNbodyParams, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -79,23 +72,19 @@ function eom_NbodySRP_SPICE!(du, u, params::NbodySRP_params, t)
 
         # compute third-body perturbation
         du[4:6] += third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
-
-        # add SRP
-        if params.naif_ids[i] == "10"
-            r_relative = u[1:3] - pos_3body   # Sun -> spacecraft vector
-            du[4:6] += params.k_srp * r_relative/norm(r_relative)^3
-        end
     end
+
     return nothing
 end
 
 
+
 """
-N-body equations of motion with SRP, using SPICE query for third-body positions.
+N-body equations of motion, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
 This function propagates the concatenated state and STM.
 """
-function eom_NbodySRP_STM_SPICE!(du, u, params::NbodySRP_params, t)
+function eom_Nbody_STM_SPICE!(du, u, params::InterpolatedNbodyParams, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -106,7 +95,7 @@ function eom_NbodySRP_STM_SPICE!(du, u, params::NbodySRP_params, t)
     du[4:6] .= -mu_r3 * u[1:3]
 
     # third-body effects
-    R_sun = zeros(3)
+    #Rs = zeros(3, length(params.mus_scaled)-1)
     for i = 2:length(params.mus_scaled)
         # get position of third body
         pos_3body, _ = spkpos(
@@ -121,17 +110,10 @@ function eom_NbodySRP_STM_SPICE!(du, u, params::NbodySRP_params, t)
         
         # compute third-body perturbation
         du[4:6] += third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
-
-        # add SRP
-        if params.naif_ids[i] == "10"
-            r_relative = u[1:3] - pos_3body   # Sun -> spacecraft vector
-            du[4:6] += params.k_srp * r_relative/norm(r_relative)^3
-            R_sun .= pos_3body
-        end
     end
 
     # stm derivatives
-    Uxx = params.f_jacobian(u[1:3]..., params.mus_scaled..., params.Rs..., R_sun..., params.k_srp)
+    Uxx = params.f_jacobian(u[1:3]..., params.mus_scaled..., params.Rs...)
     du[7:12]  .= u[25:30]
     du[13:18] .= u[31:36]
     du[19:24] .= u[37:42]
@@ -157,4 +139,65 @@ function eom_NbodySRP_STM_SPICE!(du, u, params::NbodySRP_params, t)
     du[41] = Uxx[7]*u[11] + Uxx[8]*u[17] + Uxx[9]*u[23]
     du[42] = Uxx[7]*u[12] + Uxx[8]*u[18] + Uxx[9]*u[24]
     return nothing
+end
+
+
+
+"""
+N-body equations of motion, using SPICE query for third-body positions.
+This function signature is compatible with `DifferentialEquations.jl`.
+This function propagates the concatenated state and STM.
+This is a static version of the function.
+"""
+function eom_Nbody_STM_SPICE(u, params::InterpolatedNbodyParams, t)
+    # compute coefficient
+    mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
+
+    # velocity derivatives
+    dvx, dvy, dvz = -mu_r3 * u[1:3]
+
+    # third-body effects
+    for i = 2:length(params.mus_scaled)
+        # get position of third body
+        pos_3body, _ = spkpos(
+            params.naif_ids[i],
+            params.et0 + t*params.tstar,
+            params.naif_frame,
+            params.abcorr,
+            params.naif_ids[1]
+        )
+        pos_3body /= params.lstar   # re-scale
+        params.Rs[1+3(i-2):3(i-1)] .= pos_3body
+        
+        # compute third-body perturbation
+        a_3bd = third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
+        dvx += a_3bd[1]
+        dvy += a_3bd[2]
+        dvz += a_3bd[3]
+    end
+
+    # stm derivatives
+    Uxx = params.f_jacobian(u[1:3]..., params.mus_scaled..., params.Rs...)
+
+    return SA[u[4:6]..., dvx, dvy, dvz,
+              u[25:30]..., u[31:36]..., u[37:42]...,
+              Uxx[1]*u[7]  + Uxx[2]*u[13] + Uxx[3]*u[19],
+              Uxx[1]*u[8]  + Uxx[2]*u[14] + Uxx[3]*u[20],
+              Uxx[1]*u[9]  + Uxx[2]*u[15] + Uxx[3]*u[21],
+              Uxx[1]*u[10] + Uxx[2]*u[16] + Uxx[3]*u[22],
+              Uxx[1]*u[11] + Uxx[2]*u[17] + Uxx[3]*u[23],
+              Uxx[1]*u[12] + Uxx[2]*u[18] + Uxx[3]*u[24],
+              Uxx[4]*u[7]  + Uxx[5]*u[13] + Uxx[6]*u[19],
+              Uxx[4]*u[8]  + Uxx[5]*u[14] + Uxx[6]*u[20],
+              Uxx[4]*u[9]  + Uxx[5]*u[15] + Uxx[6]*u[21],
+              Uxx[4]*u[10] + Uxx[5]*u[16] + Uxx[6]*u[22],
+              Uxx[4]*u[11] + Uxx[5]*u[17] + Uxx[6]*u[23],
+              Uxx[4]*u[12] + Uxx[5]*u[18] + Uxx[6]*u[24],
+              Uxx[7]*u[7]  + Uxx[8]*u[13] + Uxx[9]*u[19],
+              Uxx[7]*u[8]  + Uxx[8]*u[14] + Uxx[9]*u[20],
+              Uxx[7]*u[9]  + Uxx[8]*u[15] + Uxx[9]*u[21],
+              Uxx[7]*u[10] + Uxx[8]*u[16] + Uxx[9]*u[22],
+              Uxx[7]*u[11] + Uxx[8]*u[17] + Uxx[9]*u[23],
+              Uxx[7]*u[12] + Uxx[8]*u[18] + Uxx[9]*u[24],
+            ]
 end

@@ -1,17 +1,19 @@
 module FullEphemerisPropagator
 
+    using Dierckx
+    import FiniteDifferences
     using LinearAlgebra
+    using OrdinaryDiffEq
+    using Printf: @printf
     using StaticArrays
     using SPICE
-    using OrdinaryDiffEq
     import Symbolics
     import SymbolicUtils
-    import FiniteDifferences
-    using Printf: @printf
 
     abstract type AbstractDifferentialCorrectionProblem end
 
     include("parameters.jl")
+    include("ephemeris_interpolation.jl")
     include("eoms/perturbations.jl")
     include("eoms/eoms_Nbody.jl")
     include("eoms/eoms_NbodySRP.jl")
