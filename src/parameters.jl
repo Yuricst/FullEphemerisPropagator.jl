@@ -59,6 +59,22 @@ mutable struct Nbody_params <: FullEphemParameters
 end
 
 
+"""
+Overload method for showing Nbody_params
+"""
+function Base.show(io::IO, params::Nbody_params)
+    println("N-body integration parameters struct")
+    @printf("    et0        : %1.8f\n", params.et0)
+    @printf("    lstar      : %1.4f\n", params.lstar)
+    @printf("    tstar      : %1.4f\n", params.tstar)
+    @printf("    vstar      : %1.4f\n", params.vstar)
+    @printf("    mus_scaled : %s\n", string(params.mus_scaled))
+    @printf("    naif_ids   : %s\n", string(params.naif_ids))
+    @printf("    naif_frame : %s\n", params.naif_frame)
+    @printf("    abcorr     : %s\n", params.abcorr)
+end
+
+
 mutable struct NbodySRP_params <: FullEphemParameters
     et0::Float64
     lstar::Real
@@ -120,4 +136,21 @@ mutable struct NbodySRP_params <: FullEphemParameters
             zeros(MVector{3 * (length(mus)-1),Float64})
         )
     end
+end
+
+
+"""
+Overload method for showing NbodySRP_params
+"""
+function Base.show(io::IO, params::NbodySRP_params)
+    println("N-body+SRP integration parameters struct")
+    @printf("    et0        : %1.8f\n", params.et0)
+    @printf("    lstar      : %1.4f\n", params.lstar)
+    @printf("    tstar      : %1.4f\n", params.tstar)
+    @printf("    vstar      : %1.4f\n", params.vstar)
+    @printf("    mus_scaled : %s\n", string(params.mus_scaled))
+    @printf("    k_srp      : %1.4f\n", params.k_srp)
+    @printf("    naif_ids   : %s\n", string(params.naif_ids))
+    @printf("    naif_frame : %s\n", params.naif_frame)
+    @printf("    abcorr     : %s\n", params.abcorr)
 end

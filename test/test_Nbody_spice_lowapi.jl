@@ -38,7 +38,7 @@ parameters = FullEphemerisPropagator.Nbody_params(
 )
 
 # initial state (in canonical scale)
-u0 = [1.0, 0.0, 0.3, 0.0, 1.0, 0.0]
+u0 = [1.0, 0.0, 0.3, 0.5, 1.0, 0.0]
 
 # time span (in canonical scale)
 tspan = (0.0, 7*86400/parameters.tstar)
@@ -49,7 +49,7 @@ sol = solve(prob, Tsit5(), reltol=1e-12, abstol=1e-12)
 @show sol.u[end];
 
 # plot with GLMakie
-fig = Figure(resolution=(600,600), fontsize=22)
+fig = Figure(size=(600,600), fontsize=22)
 ax1 = Axis3(fig[1, 1], aspect=(1,1,1))
 lines!(ax1, sol[1,:], sol[2,:], sol[3,:])
 fig

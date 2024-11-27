@@ -38,7 +38,6 @@ prop = FullEphemerisPropagator.Propagator(
     reltol = 1e-14,
     abstol = 1e-12,
 )
-FullEphemerisPropagator.pretty(prop)
 
 prop_stm = FullEphemerisPropagator.PropagatorSTM(
     Vern7(),
