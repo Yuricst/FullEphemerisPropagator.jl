@@ -1,6 +1,5 @@
 """Run tests"""
 
-using GLMakie
 using LinearAlgebra
 using OrdinaryDiffEq
 using SPICE
@@ -12,9 +11,12 @@ include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
 spice_dir = ENV["SPICE"]
 furnsh(joinpath(spice_dir, "lsk", "naif0012.tls"))
 furnsh(joinpath(spice_dir, "spk", "de440.bsp"))
+furnsh(joinpath(spice_dir, "pck", "gm_de440.tpc"))
 
-
-
-@time @testset "Propagator object tests" begin
+@time @testset "Propagator tests" begin
+    include("test_jacobian.jl")
+    include("test_Nbody_spice.jl")
+    include("test_NbodySRP_spice.jl")
+    include("test_Nbody_spice_lowapi.jl")
     include("test_stm.jl")
 end
