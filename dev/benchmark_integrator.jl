@@ -39,7 +39,6 @@ prop = FullEphemerisPropagator.Propagator(
     reltol = 1e-14,
     abstol = 1e-12,
 )
-FullEphemerisPropagator.pretty(prop)
 
 # initial epoch
 et0 = str2et("2020-01-01T00:00:00")

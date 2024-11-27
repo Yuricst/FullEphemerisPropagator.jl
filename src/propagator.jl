@@ -91,6 +91,19 @@ end
 
 
 """
+Overload method for showing Propagator
+"""
+function Base.show(io::IO, propagator::Propagator)
+    println("Propagator struct")
+    @printf("    method  : %s\n", string(propagator.method))
+    @printf("    reltol  : %1.4f\n", propagators.reltol)
+    @printf("    abstol  : %1.4f\n", propagators.abstol)
+    @printf("    use_srp : %s\n", string(propagator.use_srp))
+    @printf("    use_sa  : %s\n", string(propagator.use_sa))
+end
+
+
+"""
 Propagator struct holds ODEProblem along with solve parameters.
 """
 mutable struct PropagatorSTM <: FullEphemPropagator
@@ -178,16 +191,16 @@ mutable struct PropagatorSTM <: FullEphemPropagator
 end
 
 
-function pretty(propagator::Union{Propagator,PropagatorSTM})
-    println("Full-ephemeris integrator")
-    println("   naif_ids     : ", propagator.parameters.naif_ids)
-    println("   use_srp      : ", propagator.use_srp)
-    @printf("   canonical LU : %1.4f\n", propagator.parameters.lstar)
-    @printf("   canonical TU : %1.4f\n", propagator.parameters.tstar)
-    println("   method       : ", propagator.method)
-    @printf("   reltol       : %.1e\n", propagator.reltol)
-    @printf("   abstol       : %.1e\n", propagator.abstol)
-    println("   use_sa       : ", propagator.use_sa)
+"""
+Overload method for showing PropagatorSTM
+"""
+function Base.show(io::IO, propagator::PropagatorSTM)
+    println("PropagatorSTM struct")
+    @printf("    method  : %s\n", string(propagator.method))
+    @printf("    reltol  : %1.4f\n", propagators.reltol)
+    @printf("    abstol  : %1.4f\n", propagators.abstol)
+    @printf("    use_srp : %s\n", string(propagator.use_srp))
+    @printf("    use_sa  : %s\n", string(propagator.use_sa))
 end
 
 

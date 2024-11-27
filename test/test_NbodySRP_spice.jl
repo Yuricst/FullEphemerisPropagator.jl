@@ -17,6 +17,7 @@ test_Nbody_spice = function()
         lstar,
         mus,
         naif_ids;
+        use_srp = true,
         naif_frame = naif_frame,
         reltol = 1e-12,
         abstol = 1e-12,
@@ -36,12 +37,12 @@ test_Nbody_spice = function()
     tevals = LinRange(tspan[1], tspan[2], 15000)   # optionally specify when to query states
     sol = FullEphemerisPropagator.propagate(prop, et0, tspan, u0; saveat=tevals)
     xf_check = [
-        -0.9706832470466424
-        -0.5034938627169759
-        -1.775010908894415
-         0.12930004488210714
-        -0.5984476217012531
-         0.25704051772397823
+        -0.9707266474653355
+        -0.5034448179024911
+        -1.775070433549609
+         0.1292918188529246
+        -0.5984316125180164
+         0.25702901382064053
     ]
     @test norm(sol.u[end] - xf_check) < 1e-11
 end
