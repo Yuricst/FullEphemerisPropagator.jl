@@ -24,3 +24,7 @@ end
 @time @testset "Ephemeris interpolation" begin
     include("test_interpolate_ephem.jl")
 end
+
+@time @testset "Ensemble" begin
+    # TODO
+end
