@@ -26,6 +26,7 @@ module FullEphemerisPropagator
     
     include("symbolic_jacobians.jl")
     include("propagator.jl")
+    include("jacobian.jl")
     include("canonical.jl")
     include("callbacks.jl")
     
