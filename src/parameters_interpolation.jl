@@ -16,6 +16,9 @@ mutable struct InterpolatedNbody_params <: FullEphemParameters
     tstar::Real
     vstar::Real
     mus_scaled::Vector{Float64}
+    naif_ids::Vector{String}
+    naif_frame::String
+    abcorr::String
     f_jacobian::Union{Nothing,Function}
     Rs
 
@@ -66,7 +69,11 @@ mutable struct InterpolatedNbody_params <: FullEphemParameters
             )
         end
         new(et_range, ets[2] - ets[1], ephem_dict, params, rescale_epoch,
-            params.et0, params.lstar, params.tstar, params.vstar, params.mus_scaled, params.f_jacobian,
+            params.et0, params.lstar, params.tstar, params.vstar, params.mus_scaled,
+            params.naif_ids,
+            params.naif_frame,
+            params.abcorr,
+            params.f_jacobian,
             zeros(MVector{3 * (length(params.mus_scaled)-1),Float64}))
     end
 end
