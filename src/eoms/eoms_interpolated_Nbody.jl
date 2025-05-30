@@ -19,22 +19,14 @@ function eom_Nbody_SPICE(u, params::InterpolatedNbodyParams, t)
     # third-body effects
     for i = 2:length(params.mus_scaled)
         # get position of third body
-        pos_3body, _ = spkpos(
-            params.naif_ids[i],
-            params.et0 + t*params.tstar,
-            params.naif_frame,
-            params.abcorr,
-            params.naif_ids[1]
-        )
-        pos_3body /= params.lstar   # re-scale
-
+        r_3body = get_pos(params.ephem_dict[i], params.et0 + t*params.tstar)
+        
         # compute third-body perturbation
-        a_3bd = third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
+        a_3bd = third_body_accel(u[1:3], r_3body, params.mus_scaled[i])
         dvx += a_3bd[1]
         dvy += a_3bd[2]
         dvz += a_3bd[3]
     end
-
     return SA[dx,dy,dz,dvx,dvy,dvz]
 end
 
@@ -61,17 +53,10 @@ function eom_Nbody_SPICE!(du, u, params::InterpolatedNbodyParams, t)
     # third-body effects
     for i = 2:length(params.mus_scaled)
         # get position of third body
-        pos_3body, _ = spkpos(
-            params.naif_ids[i],
-            params.et0 + t*params.tstar,
-            params.naif_frame,
-            params.abcorr,
-            params.naif_ids[1]
-        )
-        pos_3body /= params.lstar   # re-scale
+        r_3body = get_pos(params.ephem_dict[i], params.et0 + t*params.tstar)
 
         # compute third-body perturbation
-        du[4:6] += third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
+        du[4:6] += third_body_accel(u[1:3], r_3body, params.mus_scaled[i])
     end
 
     return nothing
@@ -98,18 +83,11 @@ function eom_Nbody_STM_SPICE!(du, u, params::InterpolatedNbodyParams, t)
     #Rs = zeros(3, length(params.mus_scaled)-1)
     for i = 2:length(params.mus_scaled)
         # get position of third body
-        pos_3body, _ = spkpos(
-            params.naif_ids[i],
-            params.et0 + t*params.tstar,
-            params.naif_frame,
-            params.abcorr,
-            params.naif_ids[1]
-        )
-        pos_3body /= params.lstar   # re-scale
-        params.Rs[1+3(i-2):3(i-1)] .= pos_3body
+        r_3body = get_pos(params.ephem_dict[i], params.et0 + t*params.tstar)
+        params.Rs[1+3(i-2):3(i-1)] .= r_3body
         
         # compute third-body perturbation
-        du[4:6] += third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
+        du[4:6] += third_body_accel(u[1:3], r_3body, params.mus_scaled[i])
     end
 
     # stm derivatives

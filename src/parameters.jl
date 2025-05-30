@@ -2,7 +2,6 @@
 Parameters file
 """
 
-abstract type FullEphemParameters end
 
 mutable struct Nbody_params <: FullEphemParameters
     et0::Float64
@@ -26,6 +25,7 @@ mutable struct Nbody_params <: FullEphemParameters
         naif_frame::String="J2000",
         abcorr::String="NONE",
         use_canonical::Bool = true,
+        f_jacobian::Union{Nothing,Function} = nothing,
     )
         if use_canonical
             # scaled mus
@@ -52,7 +52,7 @@ mutable struct Nbody_params <: FullEphemParameters
             naif_ids,
             naif_frame,
             abcorr,
-            nothing,
+            f_jacobian,
             zeros(MVector{3 * (length(mus)-1),Float64})
         )
     end

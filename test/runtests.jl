@@ -23,8 +23,9 @@ end
 
 @time @testset "Ephemeris interpolation" begin
     include("test_interpolate_ephem.jl")
+    include("test_InterpolatedNbody_spice_lowapi.jl")
 end
 
 @time @testset "Ensemble" begin
-    # TODO
+    include("test_multithread_lowapi.jl")
 end

@@ -10,17 +10,23 @@ module FullEphemerisPropagator
     import Symbolics
     import SymbolicUtils
 
+    abstract type FullEphemParameters end
     abstract type AbstractDifferentialCorrectionProblem end
 
     include("parameters.jl")
     include("ephemeris_interpolation.jl")
+
     include("eoms/perturbations.jl")
     include("eoms/eoms_Nbody.jl")
     include("eoms/eoms_NbodySRP.jl")
+
+    include("eoms/eoms_interpolated_Nbody.jl")
+    
     include("symbolic_jacobians.jl")
     include("propagator.jl")
     include("canonical.jl")
     include("callbacks.jl")
+    
     include("differentialcorrection/forward_multiple_shooting.jl")
     include("differentialcorrection/maneuver_multiple_shooting.jl")
 

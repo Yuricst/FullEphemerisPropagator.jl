@@ -1,5 +1,10 @@
 """Test ephemeris interpolation"""
 
+using LinearAlgebra
+using SPICE
+
+include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
+
 
 test_interpolate_ephem = function ()
     # define parameters
