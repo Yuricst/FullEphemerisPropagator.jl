@@ -102,6 +102,7 @@ mutable struct NbodySRP_params <: FullEphemParameters
         abcorr::String="NONE",
         AU = 149597870.7,
         use_canonical::Bool = true,
+        f_jacobian::Union{Nothing,Function} = nothing,
     )
         if use_canonical
             # scaled mus
@@ -132,7 +133,7 @@ mutable struct NbodySRP_params <: FullEphemParameters
             naif_ids,
             naif_frame,
             abcorr,
-            nothing,
+            f_jacobian,
             zeros(MVector{3 * (length(mus)-1),Float64})
         )
     end

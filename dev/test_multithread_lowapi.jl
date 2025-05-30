@@ -43,7 +43,7 @@ parameters = FullEphemerisPropagator.Nbody_params(
 )
 
 et_range = (et0, et0 + 365.0*86400)
-interp_params = FullEphemerisPropagator.InterpolatedNbodyParams(et_range, parameters, 20000;
+interp_params = FullEphemerisPropagator.InterpolatedNbody_params(et_range, parameters, 20000;
      rescale_epoch = false,)
 
 # define state

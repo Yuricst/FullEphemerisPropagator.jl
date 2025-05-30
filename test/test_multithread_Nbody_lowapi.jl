@@ -9,9 +9,9 @@ using SPICE
 using OrdinaryDiffEq
 using Test
 
-@show nthreads()
-
-include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
+if !@isdefined(FullEphemerisPropagator)
+    include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
+end
 
 # furnish spice kernels
 spice_dir = ENV["SPICE"]
@@ -43,7 +43,7 @@ parameters = FullEphemerisPropagator.Nbody_params(
 )
 
 et_range = (et0, et0 + 365.0*86400)
-interp_params = FullEphemerisPropagator.InterpolatedNbodyParams(et_range, parameters, 20000;
+interp_params = FullEphemerisPropagator.InterpolatedNbody_params(et_range, parameters, 20000;
      rescale_epoch = false,)
 
 # define state
@@ -59,7 +59,7 @@ x0_conditions = [
     [u0[1:3] + 10/parameters.lstar * randn(3); u0[4:6] + 1e-3/parameters.vstar * randn(3)]
     for _ in 1:N_traj
 ]
-function prob_func(ode_problem, i, repeat)
+function prob_func_Nbody(ode_problem, i, repeat)
     _x0 = x0_conditions[i]
     remake(ode_problem, u0=_x0)
 end
@@ -67,13 +67,13 @@ end
 prob = ODEProblem(FullEphemerisPropagator.eom_Nbody_SPICE!, u0, tspan, parameters)
 ensemble_prob = EnsembleProblem(
     prob;
-    prob_func = prob_func
+    prob_func = prob_func_Nbody
 )
 
 prob_interp = ODEProblem(FullEphemerisPropagator.eom_Nbody_SPICE!, u0, tspan, interp_params)
 ensemble_prob_interp = EnsembleProblem(
     prob_interp;
-    prob_func = prob_func
+    prob_func = prob_func_Nbody
 )
 
 sols = solve(ensemble_prob, Vern9(), EnsembleSerial();
@@ -94,7 +94,7 @@ x0_conditions = [
     [u0[1:3] + 10/parameters.lstar * randn(3); u0[4:6] + 1e-3/parameters.vstar * randn(3); reshape(I(6),36)]
     for _ in 1:N_traj
 ]
-function prob_func(ode_problem, i, repeat)
+function prob_func_Nbody_STM(ode_problem, i, repeat)
     _x0 = x0_conditions[i]
     remake(ode_problem, u0=_x0)
 end
@@ -102,13 +102,13 @@ end
 prob = ODEProblem(FullEphemerisPropagator.eom_Nbody_STM_SPICE!, u0, tspan, parameters)
 ensemble_prob = EnsembleProblem(
     prob;
-    prob_func = prob_func
+    prob_func = prob_func_Nbody_STM
 )
 
 prob_interp = ODEProblem(FullEphemerisPropagator.eom_Nbody_STM_SPICE!, u0, tspan, interp_params)
 ensemble_prob_interp = EnsembleProblem(
     prob_interp;
-    prob_func = prob_func
+    prob_func = prob_func_Nbody_STM
 )
 
 sols = solve(ensemble_prob, Vern9(), EnsembleSerial();

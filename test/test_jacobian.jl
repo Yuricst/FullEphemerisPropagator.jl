@@ -2,6 +2,10 @@
 Test jacobian function
 """
 
+if !@isdefined(FullEphemerisPropagator)
+    include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
+end
+
 test_jacobian = function ()
 
     naif_frame = "J2000"

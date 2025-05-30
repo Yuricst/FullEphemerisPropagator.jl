@@ -3,6 +3,10 @@ Test integrating N-body dynamics with SPICE call within eom.
 Uses low-level API
 """
 
+if !@isdefined(FullEphemerisPropagator)
+    include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
+end
+
 test_Nbody_spice_lowapi = function()
     # define parameters
     mus = [

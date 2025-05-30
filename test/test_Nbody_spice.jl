@@ -2,6 +2,10 @@
 Test integrating N-body dynamics with SPICE call within eom
 """
 
+if !@isdefined(FullEphemerisPropagator)
+    include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
+end
+
 test_Nbody_spice = function()
 
     # define parameters
