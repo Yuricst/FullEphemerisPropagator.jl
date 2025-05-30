@@ -1,24 +1,32 @@
 module FullEphemerisPropagator
 
+    using Dierckx
+    import FiniteDifferences
     using LinearAlgebra
+    using OrdinaryDiffEq
+    using Printf: @printf
     using StaticArrays
     using SPICE
-    using OrdinaryDiffEq
     import Symbolics
     import SymbolicUtils
-    import FiniteDifferences
-    using Printf: @printf
 
+    abstract type FullEphemParameters end
     abstract type AbstractDifferentialCorrectionProblem end
 
     include("parameters.jl")
+    include("ephemeris_interpolation.jl")
+
     include("eoms/perturbations.jl")
     include("eoms/eoms_Nbody.jl")
     include("eoms/eoms_NbodySRP.jl")
+
+    include("eoms/eoms_interpolated_Nbody.jl")
+    
     include("symbolic_jacobians.jl")
     include("propagator.jl")
     include("canonical.jl")
     include("callbacks.jl")
+    
     include("differentialcorrection/forward_multiple_shooting.jl")
     include("differentialcorrection/maneuver_multiple_shooting.jl")
 

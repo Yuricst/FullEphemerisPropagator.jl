@@ -4,6 +4,7 @@ authors = ["Yuri <yuri.shimane@gmail.com>"]
 version = "0.1.0"
 
 [deps]
+Dierckx = "39dd38d3-220a-591b-8e3c-4c3a8c710a94"
 FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -13,3 +14,4 @@ SPICE = "5bab7191-041a-5c2e-a744-024b9c3a5062"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

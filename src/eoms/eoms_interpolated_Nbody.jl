@@ -1,4 +1,4 @@
-"""Equations of motion for N-body problem"""
+"""Equations of motion for N-body problem with interpolation of third-body positions"""
 
 
 """
@@ -6,7 +6,7 @@ N-body equations of motion, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
 This is a static version of the function.
 """
-function eom_Nbody_SPICE(u, params::Nbody_params, t)
+function eom_Nbody_SPICE(u, params::InterpolatedNbodyParams, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -19,22 +19,14 @@ function eom_Nbody_SPICE(u, params::Nbody_params, t)
     # third-body effects
     for i = 2:length(params.mus_scaled)
         # get position of third body
-        pos_3body, _ = spkpos(
-            params.naif_ids[i],
-            params.et0 + t*params.tstar,
-            params.naif_frame,
-            params.abcorr,
-            params.naif_ids[1]
-        )
-        pos_3body /= params.lstar   # re-scale
-
+        r_3body = get_pos(params.ephem_dict[i], params.et0 + t*params.tstar)
+        
         # compute third-body perturbation
-        a_3bd = third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
+        a_3bd = third_body_accel(u[1:3], r_3body, params.mus_scaled[i])
         dvx += a_3bd[1]
         dvy += a_3bd[2]
         dvz += a_3bd[3]
     end
-
     return SA[dx,dy,dz,dvx,dvy,dvz]
 end
 
@@ -44,7 +36,7 @@ end
 N-body equations of motion, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
 """
-function eom_Nbody_SPICE!(du, u, params::Nbody_params, t)
+function eom_Nbody_SPICE!(du, u, params::InterpolatedNbodyParams, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -61,17 +53,10 @@ function eom_Nbody_SPICE!(du, u, params::Nbody_params, t)
     # third-body effects
     for i = 2:length(params.mus_scaled)
         # get position of third body
-        pos_3body, _ = spkpos(
-            params.naif_ids[i],
-            params.et0 + t*params.tstar,
-            params.naif_frame,
-            params.abcorr,
-            params.naif_ids[1]
-        )
-        pos_3body /= params.lstar   # re-scale
+        r_3body = get_pos(params.ephem_dict[i], params.et0 + t*params.tstar)
 
         # compute third-body perturbation
-        du[4:6] += third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
+        du[4:6] += third_body_accel(u[1:3], r_3body, params.mus_scaled[i])
     end
 
     return nothing
@@ -84,7 +69,7 @@ N-body equations of motion, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
 This function propagates the concatenated state and STM.
 """
-function eom_Nbody_STM_SPICE!(du, u, params::Nbody_params, t)
+function eom_Nbody_STM_SPICE!(du, u, params::InterpolatedNbodyParams, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -98,18 +83,11 @@ function eom_Nbody_STM_SPICE!(du, u, params::Nbody_params, t)
     #Rs = zeros(3, length(params.mus_scaled)-1)
     for i = 2:length(params.mus_scaled)
         # get position of third body
-        pos_3body, _ = spkpos(
-            params.naif_ids[i],
-            params.et0 + t*params.tstar,
-            params.naif_frame,
-            params.abcorr,
-            params.naif_ids[1]
-        )
-        pos_3body /= params.lstar   # re-scale
-        params.Rs[1+3(i-2):3(i-1)] .= pos_3body
+        r_3body = get_pos(params.ephem_dict[i], params.et0 + t*params.tstar)
+        params.Rs[1+3(i-2):3(i-1)] .= r_3body
         
         # compute third-body perturbation
-        du[4:6] += third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
+        du[4:6] += third_body_accel(u[1:3], r_3body, params.mus_scaled[i])
     end
 
     # stm derivatives
@@ -149,7 +127,7 @@ This function signature is compatible with `DifferentialEquations.jl`.
 This function propagates the concatenated state and STM.
 This is a static version of the function.
 """
-function eom_Nbody_STM_SPICE(u, params::Nbody_params, t)
+function eom_Nbody_STM_SPICE(u, params::InterpolatedNbodyParams, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
