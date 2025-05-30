@@ -110,8 +110,39 @@ fig
 ```
 
 <p align="center">
-    <img src="./test/test_propagation_example.png" width="550" title="test_propagation_example">
+    <img src="./dev/test_propagation_example.png" width="550" title="test_propagation_example">
 </p>
+
+
+## Integrating with interpolated ephemeris
+
+SPICE calls are not compatible to be used with `EnsembleThreads()`. As a work-around, we provide a suite to interpolate a priori the ephemerides of the celestial bodies of interest within a range of epoch of interest ahead of time, and a set of EOMs that use these interpolated ephemerides instead of making SPICE calls within the EOM.
+
+```julia
+# we first create an interpolated N-body parameter struct by wrapping around the `Nbody_params`
+et_range = (et0, et0 + 365.0*86400)
+interp_params = FullEphemerisPropagator.InterpolatedNbody_params(
+    et_range, parameters, 20000;
+    rescale_epoch = false,)
+
+# we can then define an ensemble problem
+function prob_func_Nbody(ode_problem, i, repeat)
+    _x0 = x0_conditions[i]         # say we want to integrate for various initial conditions 
+    remake(ode_problem, u0=_x0)    # we can use the remake function to set other parameters as well
+end
+prob_interp = ODEProblem(FullEphemerisPropagator.eom_Nbody_SPICE!, u0, tspan, interp_params)
+ensemble_prob = EnsembleProblem(
+    prob_interp;
+    prob_func = prob_func_Nbody
+)
+
+# and solve them
+sols_interp = solve(
+    ensemble_prob, Vern9(), EnsembleThreads();
+    trajectories=len(x0_conditions), reltol=1e-14, abstol=1e-14
+)
+```
+
 
 ## References
 
