@@ -53,6 +53,7 @@ u0 = [u0_dim[1:3]/lstar; u0_dim[4:6]/parameters.vstar]
 # propagation test with ensemble
 tspan = (0.0, 4*86400/parameters.tstar)
 
+# without STMs
 N_traj = 5
 x0_conditions = [
     [u0[1:3] + 10/parameters.lstar * randn(3); u0[4:6] + 1e-3/parameters.vstar * randn(3)]
@@ -83,6 +84,42 @@ sols_interp = solve(ensemble_prob_interp, Vern9(), EnsembleThreads();
 
 for (sol,sol_interp) in zip(sols,sols_interp)
     @test norm(sol.u[end] - sol_interp.u[end]) < 1e-11
+    @test abs(sol.t[end] - sol_interp.t[end]) < 1e-16
+end
+
+
+# with STMs
+N_traj = 5
+x0_conditions = [
+    [u0[1:3] + 10/parameters.lstar * randn(3); u0[4:6] + 1e-3/parameters.vstar * randn(3); reshape(I(6),36)]
+    for _ in 1:N_traj
+]
+function prob_func(ode_problem, i, repeat)
+    _x0 = x0_conditions[i]
+    remake(ode_problem, u0=_x0)
+end
+
+prob = ODEProblem(FullEphemerisPropagator.eom_Nbody_STM_SPICE!, u0, tspan, parameters)
+ensemble_prob = EnsembleProblem(
+    prob;
+    prob_func = prob_func
+)
+
+prob_interp = ODEProblem(FullEphemerisPropagator.eom_Nbody_STM_SPICE!, u0, tspan, interp_params)
+ensemble_prob_interp = EnsembleProblem(
+    prob_interp;
+    prob_func = prob_func
+)
+
+sols = solve(ensemble_prob, Vern9(), EnsembleSerial();
+    trajectories=N_traj, reltol=1e-14, abstol=1e-14)
+
+sols_interp = solve(ensemble_prob_interp, Vern9(), EnsembleThreads();
+    trajectories=N_traj, reltol=1e-14, abstol=1e-14)
+
+for (sol,sol_interp) in zip(sols,sols_interp)
+    @test norm(sol.u[end][1:6] - sol_interp.u[end][1:6]) < 1e-11
+    @test norm(sol.u[end][7:42] - sol_interp.u[end][7:42]) < 1e-10
     @test abs(sol.t[end] - sol_interp.t[end]) < 1e-16
 end
 
