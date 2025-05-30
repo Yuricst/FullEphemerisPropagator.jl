@@ -27,5 +27,6 @@ end
 end
 
 @time @testset "Ensemble" begin
-    include("test_multithread_lowapi.jl")
+    include("test_multithread_Nbody_lowapi.jl")
+    include("test_multithread_NbodySRP_lowapi.jl")
 end

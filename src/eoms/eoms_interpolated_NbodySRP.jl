@@ -1,11 +1,11 @@
-"""Equations of motion for N-body problem with solar radiation pressure (SRP) and J2"""
+"""Equations of motion for N-body problem with solar radiation pressure (SRP)"""
 
 
 """
 N-body equations of motion with SRP, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
 """
-function eom_NbodySRPJ2_SPICE(u, params, t)
+function eom_NbodySRP_SPICE(u, params::InterpolatedNbodySRP_params, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -18,24 +18,17 @@ function eom_NbodySRPJ2_SPICE(u, params, t)
     # third-body effects
     for i = 2:length(params.mus_scaled)
         # get position of third body
-        pos_3body, _ = spkpos(
-            params.naif_ids[i],
-            params.et0 + t*params.tstar,
-            params.naif_frame,
-            params.abcorr,
-            params.naif_ids[1]
-        )
-        pos_3body /= params.lstar   # re-scale
+        r_3body = get_pos(params.ephem_dict[i], params.et0 + t*params.tstar)
 
         # compute third-body perturbation
-        a_3bd = third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
+        a_3bd = third_body_accel(u[1:3], r_3body, params.mus_scaled[i])
         dvx += a_3bd[1]
         dvy += a_3bd[2]
         dvz += a_3bd[3]
 
         # add SRP
         if params.naif_ids[i] == "10"
-            r_relative = u[1:3] - pos_3body   # Sun -> spacecraft vector
+            r_relative = u[1:3] - r_3body   # Sun -> spacecraft vector
             du[4:6] += params.k_srp * r_relative/norm(r_relative)^3
             dvx += params.k_srp * r_relative[1]/norm(r_relative)^3
             dvy += params.k_srp * r_relative[2]/norm(r_relative)^3
@@ -51,7 +44,7 @@ end
 N-body equations of motion with SRP, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
 """
-function eom_NbodySRPJ2_SPICE!(du, u, params, t)
+function eom_NbodySRP_SPICE!(du, u, params::InterpolatedNbodySRP_params, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -68,21 +61,14 @@ function eom_NbodySRPJ2_SPICE!(du, u, params, t)
     # third-body effects
     for i = 2:length(params.mus_scaled)
         # get position of third body
-        pos_3body, _ = spkpos(
-            params.naif_ids[i],
-            params.et0 + t*params.tstar,
-            params.naif_frame,
-            params.abcorr,
-            params.naif_ids[1]
-        )
-        pos_3body /= params.lstar   # re-scale
+        r_3body = get_pos(params.ephem_dict[i], params.et0 + t*params.tstar)
 
         # compute third-body perturbation
-        du[4:6] += third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
+        du[4:6] += third_body_accel(u[1:3], r_3body, params.mus_scaled[i])
 
         # add SRP
         if params.naif_ids[i] == "10"
-            r_relative = u[1:3] - pos_3body   # Sun -> spacecraft vector
+            r_relative = u[1:3] - r_3body   # Sun -> spacecraft vector
             du[4:6] += params.k_srp * r_relative/norm(r_relative)^3
         end
     end
@@ -95,7 +81,7 @@ N-body equations of motion with SRP, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
 This function propagates the concatenated state and STM.
 """
-function eom_NbodySRPJ2_STM_SPICE!(du, u, params, t)
+function eom_NbodySRP_STM_SPICE!(du, u, params::InterpolatedNbodySRP_params, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -109,24 +95,17 @@ function eom_NbodySRPJ2_STM_SPICE!(du, u, params, t)
     R_sun = zeros(3)
     for i = 2:length(params.mus_scaled)
         # get position of third body
-        pos_3body, _ = spkpos(
-            params.naif_ids[i],
-            params.et0 + t*params.tstar,
-            params.naif_frame,
-            params.abcorr,
-            params.naif_ids[1]
-        )
-        pos_3body /= params.lstar   # re-scale
-        params.Rs[1+3(i-2):3(i-1)] .= pos_3body
+        r_3body = get_pos(params.ephem_dict[i], params.et0 + t*params.tstar)
+        params.Rs[1+3(i-2):3(i-1)] .= r_3body
         
         # compute third-body perturbation
-        du[4:6] += third_body_accel(u[1:3], pos_3body, params.mus_scaled[i])
+        du[4:6] += third_body_accel(u[1:3], r_3body, params.mus_scaled[i])
 
         # add SRP
         if params.naif_ids[i] == "10"
-            r_relative = u[1:3] - pos_3body   # Sun -> spacecraft vector
+            r_relative = u[1:3] - r_3body   # Sun -> spacecraft vector
             du[4:6] += params.k_srp * r_relative/norm(r_relative)^3
-            R_sun .= pos_3body
+            R_sun .= r_3body
         end
     end
 

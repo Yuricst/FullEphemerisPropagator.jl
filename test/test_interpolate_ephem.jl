@@ -3,7 +3,9 @@
 using LinearAlgebra
 using SPICE
 
-include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
+if !@isdefined(FullEphemerisPropagator)
+    include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
+end
 
 
 test_interpolate_ephem = function ()
@@ -29,7 +31,7 @@ test_interpolate_ephem = function ()
     )
 
 
-    interp_params = FullEphemerisPropagator.InterpolatedNbodyParams(
+    interp_params = FullEphemerisPropagator.InterpolatedNbody_params(
         (et0, et0 + 30 * 86400.0),
         parameters,
         1000;

@@ -1,5 +1,9 @@
 """Test STM propagation"""
 
+if !@isdefined(FullEphemerisPropagator)
+    include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
+end
+
 test_stm = function()
     # define parameters
     mus = [
