@@ -1,13 +1,10 @@
 """Parameters with interpolated ephemerides"""
 
 
-abstract type InterpolatedEphemerisParameters end
-
-
 """
 Construct parameters for interpolated equations of motion where no SPICE calls are made internally.
 """
-mutable struct InterpolatedNbody_params <: InterpolatedEphemerisParameters
+mutable struct InterpolatedNbody_params <: FullEphemParameters
     et_range::Tuple{Float64, Float64}
     dt::Float64
     ephem_dict::Dict{Int, InterpolatedEphemeris}
@@ -97,7 +94,7 @@ end
 """
 Construct parameters for interpolated equations of motion where no SPICE calls are made internally.
 """
-mutable struct InterpolatedNbodySRP_params <: InterpolatedEphemerisParameters
+mutable struct InterpolatedNbodySRP_params <: FullEphemParameters
     et_range::Tuple{Float64, Float64}
     dt::Float64
     ephem_dict::Dict{Int, InterpolatedEphemeris}

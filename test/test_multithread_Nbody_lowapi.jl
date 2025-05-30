@@ -70,7 +70,7 @@ ensemble_prob = EnsembleProblem(
     prob_func = prob_func_Nbody
 )
 
-prob_interp = ODEProblem(FullEphemerisPropagator.eom_Nbody_SPICE!, u0, tspan, interp_params)
+prob_interp = ODEProblem(FullEphemerisPropagator.eom_Nbody_Interpolated!, u0, tspan, interp_params)
 ensemble_prob_interp = EnsembleProblem(
     prob_interp;
     prob_func = prob_func_Nbody
@@ -105,7 +105,7 @@ ensemble_prob = EnsembleProblem(
     prob_func = prob_func_Nbody_STM
 )
 
-prob_interp = ODEProblem(FullEphemerisPropagator.eom_Nbody_STM_SPICE!, u0, tspan, interp_params)
+prob_interp = ODEProblem(FullEphemerisPropagator.eom_Nbody_STM_Interpolated!, u0, tspan, interp_params)
 ensemble_prob_interp = EnsembleProblem(
     prob_interp;
     prob_func = prob_func_Nbody_STM

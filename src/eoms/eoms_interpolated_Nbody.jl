@@ -6,7 +6,7 @@ N-body equations of motion, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
 This is a static version of the function.
 """
-function eom_Nbody_SPICE(u, params::InterpolatedNbody_params, t)
+function eom_Nbody_Interpolated(u, params::FullEphemParameters, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -36,7 +36,7 @@ end
 N-body equations of motion, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
 """
-function eom_Nbody_SPICE!(du, u, params::InterpolatedNbody_params, t)
+function eom_Nbody_Interpolated!(du, u, params::FullEphemParameters, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -69,7 +69,7 @@ N-body equations of motion, using SPICE query for third-body positions.
 This function signature is compatible with `DifferentialEquations.jl`.
 This function propagates the concatenated state and STM.
 """
-function eom_Nbody_STM_SPICE!(du, u, params::InterpolatedNbody_params, t)
+function eom_Nbody_STM_Interpolated!(du, u, params::FullEphemParameters, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 
@@ -127,7 +127,7 @@ This function signature is compatible with `DifferentialEquations.jl`.
 This function propagates the concatenated state and STM.
 This is a static version of the function.
 """
-function eom_Nbody_STM_SPICE(u, params::InterpolatedNbody_params, t)
+function eom_Nbody_STM_Interpolated(u, params::FullEphemParameters, t)
     # compute coefficient
     mu_r3 = (params.mus_scaled[1] / norm(u[1:3])^3)
 

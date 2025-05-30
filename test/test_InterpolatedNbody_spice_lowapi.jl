@@ -6,9 +6,9 @@ Uses low-level API
 using SPICE
 using OrdinaryDiffEq
 
-if !@isdefined(FullEphemerisPropagator)
+# if !@isdefined(FullEphemerisPropagator)
     include(joinpath(@__DIR__, "../src/FullEphemerisPropagator.jl"))
-end
+# end
 
 # furnish spice kernels
 spice_dir = ENV["SPICE"]
@@ -48,18 +48,18 @@ u0_dim = [2200.0, 0.0, 4200.0, 0.03, 1.1, 0.1]
 u0 = [u0_dim[1:3]/lstar; u0_dim[4:6]/parameters.vstar]
 
 drv = FullEphemerisPropagator.eom_Nbody_SPICE(u0, parameters, 0.0)
-drv_interp = FullEphemerisPropagator.eom_Nbody_SPICE(u0, interp_params, 0.0)
+drv_interp = FullEphemerisPropagator.eom_Nbody_Interpolated(u0, interp_params, 0.0)
 @test norm(drv - drv_interp) < 1e-14
 
 drv_inplace_interp = zeros(6)
-FullEphemerisPropagator.eom_Nbody_SPICE!(drv_inplace_interp, u0, interp_params, 0.0)
+FullEphemerisPropagator.eom_Nbody_Interpolated!(drv_inplace_interp, u0, interp_params, 0.0)
 @test norm(drv - drv_inplace_interp) < 1e-14
 
 u0_stm = [u0; reshape(I(6),36)]
 drvstm_inplace = zeros(42)
 drvstm_inplace_interp = zeros(42)
-FullEphemerisPropagator.eom_Nbody_STM_SPICE!(drvstm_inplace, u0_stm, interp_params, 0.0)
-FullEphemerisPropagator.eom_Nbody_STM_SPICE!(drvstm_inplace_interp, u0_stm, interp_params, 0.0)
+FullEphemerisPropagator.eom_Nbody_STM_SPICE!(drvstm_inplace, u0_stm, parameters, 0.0)
+FullEphemerisPropagator.eom_Nbody_STM_Interpolated!(drvstm_inplace_interp, u0_stm, interp_params, 0.0)
 @test norm(drvstm_inplace - drvstm_inplace_interp) < 1e-14
 
 # propagation test
@@ -74,7 +74,7 @@ println("SPICE-based propagation time: $(time() - tstart) seconds")
 
 # solve with interpolated parameters
 tstart = time()
-prob_interp = ODEProblem(FullEphemerisPropagator.eom_Nbody_SPICE!, u0, tspan, interp_params)
+prob_interp = ODEProblem(FullEphemerisPropagator.eom_Nbody_Interpolated!, u0, tspan, interp_params)
 sol_interp = solve(prob_interp, Tsit5(), reltol=1e-12, abstol=1e-12)
 println("Interpolated propagation time: $(time() - tstart) seconds")
 @show sol_interp.u[end];
