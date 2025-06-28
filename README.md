@@ -1,3 +1,6 @@
+> [!IMPORTANT]  
+> This package is phased out in favor of [HFEM.jl](https://github.com/Yuricst/HFEM.jl)
+
 # FullEphemerisPropagator.jl
 
 This repository contains an easily portable implementation of the full-ephemeris spacecraft dynamics (position & velocity). 
