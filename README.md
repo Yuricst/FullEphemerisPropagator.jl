@@ -1,5 +1,5 @@
 > [!IMPORTANT]  
-> This package is phased out in favor of [HFEM.jl](https://github.com/Yuricst/HFEM.jl)
+> This package is phased out in favor of [HighFidelityEphemerisModel.jl](https://github.com/Yuricst/HighFidelityEphemerisModel.jl)
 
 # FullEphemerisPropagator.jl
 
